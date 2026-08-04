@@ -8,9 +8,15 @@ export async function POST(req) {
     if (!member_id) return Response.json({ error: "ต้องระบุกิจการ" }, { status: 400 });
     if (!message && !vote) return Response.json({ error: "ใส่ความเห็นหรือกดโหวตอย่างน้อยหนึ่งอย่าง" }, { status: 400 });
 
+    // ต้องมีชื่อคนพูดเสมอ — ไม่งั้นตามกลับไม่ได้ว่าใครขอแก้
+    const who = (author || "").trim().slice(0, 60);
+    if (!who) {
+      return Response.json({ error: "ใส่ชื่อเล่นของคุณที่มุมขวาบนก่อนนะครับ จะได้รู้ว่าใครคอมเมนต์" }, { status: 400 });
+    }
+
     const [row] = await sql`
       insert into feedback (member_id, clip_id, author, vote, message)
-      values (${member_id}, ${clip_id || null}, ${(author || "ไม่ระบุชื่อ").slice(0, 60)},
+      values (${member_id}, ${clip_id || null}, ${who},
               ${vote || null}, ${(message || "").slice(0, 2000)})
       returning *`;
     return Response.json({ ok: true, feedback: row });

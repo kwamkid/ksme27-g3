@@ -54,13 +54,16 @@ export default function MemberPage({ params }) {
 
   const send = async () => {
     if (!vote && !comment.trim()) return;
+    const author = getMe().trim();
+    // ต้องรู้ว่าใครขอแก้ ไม่งั้นตามกลับไม่ได้ว่าใครเป็นคนพูด
+    if (!author) return setMsg({ t: "err", m: "ใส่ชื่อเล่นของคุณที่มุมขวาบนก่อนนะครับ จะได้รู้ว่าใครคอมเมนต์" });
     const r = await fetch("/api/feedback", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         member_id: id,
         clip_id: m.clips[0]?.id || null,
-        author: getMe(),
+        author,
         vote,
         message: comment,
       }),
