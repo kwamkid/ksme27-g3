@@ -1,6 +1,29 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { getMe } from "../../me";
+import { avatarSrc, ownerSrc, logoSrc } from "@/lib/assets";
+
+// ช่องข้อความที่สูงพอดีเนื้อหา ไม่เหลือที่ว่างเปล่า และไม่ต้องเลื่อนอ่าน
+function AutoTextarea({ value, onChange, placeholder }) {
+  const ref = useRef(null);
+  const fit = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  };
+  useEffect(fit, [value]);
+  return (
+    <textarea
+      ref={ref}
+      rows={1}
+      className="grow"
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
+}
 
 const FIELDS = [
   ["company_th", "ชื่อกิจการ (ไทย)", 1],
@@ -22,8 +45,8 @@ export default function MemberPage({ params }) {
   const [form, setForm] = useState({});
   const [msg, setMsg] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [vote, setVote] = useState(null);
   const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const load = () =>
     fetch("/api/data")
@@ -53,31 +76,67 @@ export default function MemberPage({ params }) {
   };
 
   const send = async () => {
-    if (!vote && !comment.trim()) return;
+    if (!comment.trim()) return;
     const author = getMe().trim();
     // ต้องรู้ว่าใครขอแก้ ไม่งั้นตามกลับไม่ได้ว่าใครเป็นคนพูด
     if (!author) return setMsg({ t: "err", m: "ใส่ชื่อเล่นของคุณที่มุมขวาบนก่อนนะครับ จะได้รู้ว่าใครคอมเมนต์" });
+    setBusy(true);
     const r = await fetch("/api/feedback", {
       method: "POST",
       headers: { "content-type": "application/json" },
+      body: JSON.stringify({ member_id: id, clip_id: m.clips[0]?.id || null, author, message: comment }),
+    }).then((x) => x.json());
+    setBusy(false);
+    if (r.error) return setMsg({ t: "err", m: r.error });
+    setComment(""); load();
+  };
+
+  // ปุ่มผ่าน/ยังไม่ผ่าน — กดสลับไปมาได้
+  // ถ้ามีเวอร์ชันที่ผ่านอยู่แล้วให้ปุ่มคุมตัวนั้น ถ้ายังไม่มีให้คุมเวอร์ชันล่าสุด
+  const approvedClip = m.clips.find((c) => c.status === "approved");
+  const targetClip = approvedClip || m.clips[0] || null;
+
+  const toggleApprove = async () => {
+    if (!targetClip) return;
+    setBusy(true);
+    const r = await fetch("/api/clips", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        member_id: id,
-        clip_id: m.clips[0]?.id || null,
-        author,
-        vote,
-        message: comment,
+        id: targetClip.id,
+        status: approvedClip ? "draft" : "approved",
+        author: getMe(),
       }),
     }).then((x) => x.json());
+    setBusy(false);
     if (r.error) return setMsg({ t: "err", m: r.error });
-    setComment(""); setVote(null); load();
+    load();
   };
 
   return (
     <div className="wrap">
       <a href="/" className="dimtext">← กลับแดชบอร์ด</a>
-      <h2 style={{ margin: "10px 0 2px" }}>{m.company_th}</h2>
-      <div className="dimtext" style={{ marginBottom: 18 }}>
-        {m.company_en} · {m.owner_name} {m.nickname && `(${m.nickname})`} · ทีม {m.team} {m.code && `· ${m.code}`}
+
+      <div className="mhead">
+        <div className="mhead-pics">
+          {avatarSrc(m.id) ? (
+            <img className="mhead-char" src={avatarSrc(m.id)} alt={`ตัวละคร ${m.company_th}`} />
+          ) : (
+            <span className="mhead-char none">ยังไม่มีตัวละคร</span>
+          )}
+          {ownerSrc(m.id) && <img className="mhead-face" src={ownerSrc(m.id)} alt={`เจ้าของ ${m.company_th}`} />}
+        </div>
+        <div className="mhead-txt">
+          <h2>{m.company_th}</h2>
+          <div className="dimtext">
+            {m.company_en} · {m.owner_name} {m.nickname && `(${m.nickname})`} · ทีม {m.team} {m.code && `· ${m.code}`}
+          </div>
+        </div>
+        {logoSrc(m.id) && (
+          <span className="mhead-logo">
+            <img src={logoSrc(m.id)} alt={`โลโก้ ${m.company_th}`} />
+          </span>
+        )}
       </div>
 
       {msg && <div className={`msg ${msg.t}`}>{msg.m}</div>}
@@ -90,14 +149,14 @@ export default function MemberPage({ params }) {
               <div className="field" key={f}>
                 <label>{label}</label>
                 {rows > 1 ? (
-                  <textarea rows={rows} value={form[f] ?? ""} onChange={(e) => setForm({ ...form, [f]: e.target.value })} />
+                  <AutoTextarea value={form[f] ?? ""} onChange={(v) => setForm({ ...form, [f]: v })} />
                 ) : (
                   <input value={form[f] ?? ""} onChange={(e) => setForm({ ...form, [f]: e.target.value })} />
                 )}
               </div>
             ))}
             <button onClick={save} disabled={!dirty || saving}>
-              {saving ? "กำลังบันทึก…" : dirty ? "💾 บันทึกการแก้ไข" : "ไม่มีอะไรเปลี่ยน"}
+              {saving ? "กำลังบันทึก…" : "บันทึก"}
             </button>
             <div className="dimtext" style={{ marginTop: 9 }}>
               ระบบเก็บประวัติไว้ว่าใครแก้อะไร — ใส่ชื่อคุณมุมขวาบนก่อนแก้นะครับ
@@ -121,14 +180,16 @@ export default function MemberPage({ params }) {
 
           <div className="box">
             <h3>ความเห็นของทีม ({m.feedback.length})</h3>
-            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-              <button className={`vote ${vote === "ok" ? "on-ok" : ""}`} onClick={() => setVote(vote === "ok" ? null : "ok")}>👍 ตรงแล้ว</button>
-              <button className={`vote ${vote === "revise" ? "on-rev" : ""}`} onClick={() => setVote(vote === "revise" ? null : "revise")}>🔧 ขอแก้</button>
-            </div>
             <div className="field">
-              <textarea rows={3} placeholder="เช่น ไม่ชอบ action นี้ อยากให้เป็นแบบ…" value={comment} onChange={(e) => setComment(e.target.value)} />
+              <AutoTextarea
+                value={comment}
+                onChange={setComment}
+                placeholder="เช่น พูดเร็วไป / อยากให้ฉากสว่างกว่านี้ / ชื่อบริษัทออกเสียงผิด"
+              />
             </div>
-            <button onClick={send} disabled={!vote && !comment.trim()}>ส่งความเห็น</button>
+            <button onClick={send} disabled={busy || !comment.trim()}>
+              {busy ? "กำลังส่ง…" : "ส่งความเห็น"}
+            </button>
 
             <div style={{ marginTop: 14 }}>
               {m.feedback.map((f) => (
@@ -140,6 +201,24 @@ export default function MemberPage({ params }) {
                   {f.message}
                 </div>
               ))}
+            </div>
+
+            {/* ปุ่มสรุปผล — กดสลับผ่าน/ยังไม่ผ่านได้ */}
+            <div className="approve">
+              <button
+                className={`appr ${approvedClip ? "on" : ""}`}
+                disabled={busy || !targetClip}
+                onClick={toggleApprove}
+              >
+                {!targetClip
+                  ? "ยังไม่มีคลิปให้ติ๊ก"
+                  : approvedClip
+                  ? `✅ ผ่านแล้ว (v${approvedClip.version})`
+                  : `ติ๊กว่าผ่าน (v${targetClip.version})`}
+              </button>
+              <span className="dimtext">
+                {approvedClip ? "กดอีกครั้งเพื่อยกเลิก" : "กดเมื่อคลิปนี้ใช้ได้แล้ว"}
+              </span>
             </div>
           </div>
         </div>

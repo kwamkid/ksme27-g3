@@ -14,7 +14,6 @@ const ST = {
  */
 export default function Lightbox({ member, onClose, onChanged }) {
   const [curId, setCurId] = useState(null);
-  const [vote, setVote] = useState(null);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -23,7 +22,6 @@ export default function Lightbox({ member, onClose, onChanged }) {
 
   useEffect(() => {
     setCurId(clips[0]?.id ?? null);
-    setVote(null);
     setText("");
     setErr("");
   }, [member?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -70,16 +68,16 @@ export default function Lightbox({ member, onClose, onChanged }) {
   const send = async () => {
     const author = getMe().trim();
     if (!author) return setErr("ใส่ชื่อเล่นของคุณที่มุมขวาบนก่อนนะครับ จะได้รู้ว่าใครคอมเมนต์");
-    if (!vote && !text.trim()) return;
+    if (!text.trim()) return;
     setBusy(true); setErr("");
     const r = await fetch("/api/feedback", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ member_id: member.id, clip_id: clip?.id ?? null, author, vote, message: text }),
+      body: JSON.stringify({ member_id: member.id, clip_id: clip?.id ?? null, author, message: text }),
     }).then((x) => x.json()).catch((e) => ({ error: String(e) }));
     setBusy(false);
     if (r.error) return setErr(r.error);
-    setText(""); setVote(null);
+    setText("");
     onChanged?.();
   };
 
@@ -126,46 +124,32 @@ export default function Lightbox({ member, onClose, onChanged }) {
             </div>
 
             <div className="lb-act">
-              {clip.status === "approved" ? (
-                <button className="ghost" disabled={busy} onClick={() => setStatus("draft")}>
-                  ↩︎ ยกเลิกว่าผ่าน
-                </button>
-              ) : (
-                <button disabled={busy} onClick={() => setStatus("approved")}>
-                  ✅ เอาเวอร์ชันนี้ — ผ่านแล้ว
-                </button>
-              )}
-              {clip.status !== "rejected" && (
-                <button className="ghost" disabled={busy} onClick={() => setStatus("rejected")}>
-                  ❌ ตัวนี้ตกไป
-                </button>
-              )}
-              <span className="dimtext">เลือกได้เวอร์ชันเดียว — ติ๊กใหม่ตัวเก่าจะตกไปเอง</span>
+              <button
+                className={`appr ${clip.status === "approved" ? "on" : ""}`}
+                disabled={busy}
+                onClick={() => setStatus(clip.status === "approved" ? "draft" : "approved")}
+              >
+                {clip.status === "approved" ? `✅ ผ่านแล้ว (v${clip.version})` : `ติ๊กว่าผ่าน (v${clip.version})`}
+              </button>
+              <span className="dimtext">
+                {clip.status === "approved"
+                  ? "กดอีกครั้งเพื่อยกเลิก"
+                  : "เลือกได้เวอร์ชันเดียว — ติ๊กใหม่ตัวเก่าจะตกไปเอง"}
+              </span>
             </div>
           </>
         )}
 
         {/* ───── คอมเมนต์เวอร์ชันนี้ ───── */}
         <div className="lb-say-box">
-          <div className="lb-sub">
-            คอมเมนต์{clip ? ` v${clip.version}` : ""}
-            <em> — เป็นแค่ความเห็น ยังไม่ใช่การสรุปว่าผ่าน ต้องกดส่งถึงจะบันทึก</em>
-          </div>
-          <div className="lb-votes">
-            <button className={`vote ${vote === "ok" ? "on-ok" : ""}`} onClick={() => setVote(vote === "ok" ? null : "ok")}>
-              👍 ดูโอเค
-            </button>
-            <button className={`vote ${vote === "revise" ? "on-rev" : ""}`} onClick={() => setVote(vote === "revise" ? null : "revise")}>
-              🔧 ขอแก้
-            </button>
-          </div>
+          <div className="lb-sub">คอมเมนต์{clip ? ` v${clip.version}` : ""}</div>
           <textarea
             rows={2}
             placeholder="เช่น พูดเร็วไป / อยากให้ฉากสว่างกว่านี้ / ชื่อบริษัทออกเสียงผิด"
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
-          <button disabled={busy || (!vote && !text.trim())} onClick={send}>
+          <button disabled={busy || !text.trim()} onClick={send}>
             {busy ? "กำลังส่ง…" : "ส่งความเห็น"}
           </button>
         </div>
