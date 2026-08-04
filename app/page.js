@@ -31,14 +31,15 @@ export default function Directory() {
   const [team, setTeam] = useState(null);
   const [filter, setFilter] = useState("all");
   const [q, setQ] = useState("");
-  const [lb, setLb] = useState(null);
+  const [lbId, setLbId] = useState(null);
 
-  useEffect(() => {
+  const load = () =>
     fetch("/api/data")
       .then((r) => r.json())
       .then((d) => (d.error ? setErr(d.error) : setData(d)))
       .catch((e) => setErr(String(e)));
-  }, []);
+
+  useEffect(() => { load(); }, []);
 
   const rows = useMemo(() => {
     if (!data) return [];
@@ -73,9 +74,14 @@ export default function Directory() {
     [data]
   );
 
+  const teamOrder = useMemo(
+    () => Object.fromEntries((data?.teams || []).map((t, i) => [t.key, i])),
+    [data]
+  );
+
   const shown = useMemo(() => {
     const kw = q.trim().toLowerCase();
-    return rows.filter((m) => {
+    const list = rows.filter((m) => {
       if (team && m.team !== team) return false;
       if (filter === "clip" && !m.clips.length) return false;
       if (filter === "noclip" && m.clips.length) return false;
@@ -88,7 +94,16 @@ export default function Directory() {
         .toLowerCase()
         .includes(kw);
     });
-  }, [rows, team, filter, q]);
+
+    // เรียง: มีคลิปเยอะสุดก่อน → ตามลำดับทีม → ของครบมากสุด
+    return list.sort(
+      (a, b) =>
+        b.clips.length - a.clips.length ||
+        (teamOrder[a.team] ?? 99) - (teamOrder[b.team] ?? 99) ||
+        a.missing.length - b.missing.length ||
+        a.sort_order - b.sort_order
+    );
+  }, [rows, team, filter, q, teamOrder]);
 
   if (err)
     return (
@@ -109,13 +124,7 @@ export default function Directory() {
   const needStuff = rows.filter((m) => m.missing.length).length;
   const comments = rows.reduce((n, m) => n + m.feedback.length, 0);
 
-  const openClip = (m) =>
-    setLb({
-      memberId: m.id,
-      title: m.company_th || m.company_en,
-      sub: `${m.owner_name || ""}${m.nickname ? ` (${m.nickname})` : ""} · ทีม ${m.team}`,
-      clips: m.clips,
-    });
+  const lbMember = rows.find((m) => m.id === lbId) || null;
 
   const countOf = (key) =>
     rows.filter((m) => {
@@ -251,7 +260,7 @@ export default function Directory() {
                   </div>
 
                   <div className="dir-act">
-                    <button className="play" disabled={!m.clips.length} onClick={() => openClip(m)}>
+                    <button className="play" disabled={!m.clips.length} onClick={() => setLbId(m.id)}>
                       {!m.clips.length
                         ? "ยังไม่มีคลิป"
                         : m.clips.length > 1
@@ -314,7 +323,7 @@ export default function Directory() {
 
                   <span className="ck-clip">
                     {m.clips.length ? (
-                      <button className="play sm" onClick={() => openClip(m)}>
+                      <button className="play sm" onClick={() => setLbId(m.id)}>
                         ▶ v{m.latest.version} {CLIP_TH[m.latest.status] || ""}
                       </button>
                     ) : (
@@ -328,7 +337,7 @@ export default function Directory() {
         )}
       </section>
 
-      <Lightbox open={lb} onClose={() => setLb(null)} />
+      <Lightbox member={lbMember} onClose={() => setLbId(null)} onChanged={load} />
     </div>
   );
 }

@@ -1,24 +1,35 @@
 "use client";
 import { useEffect, useState } from "react";
+import { getMe } from "./me";
 
-const STATUS_TH = {
-  approved: "✅ ผ่านแล้ว",
-  rejected: "❌ ต้องแก้",
-  draft: "🎬 รอรีวิว",
+const ST = {
+  approved: { t: "ผ่านแล้ว", cls: "ok", icon: "✅" },
+  rejected: { t: "ตกไป", cls: "todo", icon: "❌" },
+  draft: { t: "รอรีวิว", cls: "draft", icon: "🎬" },
 };
 
 /**
- * กล่องดูคลิปแบบ lightbox
- * open = { title, sub, clips: [{id, version, status, video_url}], memberId }  หรือ null
+ * หน้ารีวิวคลิป — เลือกเวอร์ชัน ดูคลิป ติ๊กว่าผ่าน คอมเมนต์ และดูประวัติ
+ * member = ข้อมูลกิจการหนึ่งราย (มี clips + feedback) หรือ null = ปิด
  */
-export default function Lightbox({ open, onClose }) {
-  const [i, setI] = useState(0);
-  const [copied, setCopied] = useState(false);
+export default function Lightbox({ member, onClose, onChanged }) {
+  const [curId, setCurId] = useState(null);
+  const [vote, setVote] = useState(null);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
 
-  useEffect(() => setI(0), [open?.memberId]);
+  const clips = member?.clips || [];
 
   useEffect(() => {
-    if (!open) return;
+    setCurId(clips[0]?.id ?? null);
+    setVote(null);
+    setText("");
+    setErr("");
+  }, [member?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!member) return;
     const onKey = (e) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -27,20 +38,49 @@ export default function Lightbox({ open, onClose }) {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, onClose]);
+  }, [member, onClose]);
 
-  if (!open) return null;
-  const clips = open.clips || [];
-  const clip = clips[i];
+  if (!member) return null;
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(clip.video_url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
-    } catch {
-      /* เบราว์เซอร์ไม่ให้ copy — ผู้ใช้กด "เปิดแท็บใหม่" แทนได้ */
-    }
+  const clip = clips.find((c) => c.id === curId) || clips[0] || null;
+  const verOf = Object.fromEntries(clips.map((c) => [c.id, c.version]));
+  const history = member.feedback || [];
+
+  const setStatus = async (status) => {
+    setBusy(true); setErr("");
+    const r = await fetch("/api/clips", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: clip.id, status, author: getMe() }),
+    }).then((x) => x.json()).catch((e) => ({ error: String(e) }));
+    setBusy(false);
+    if (r.error) return setErr(r.error);
+    onChanged?.();
+  };
+
+  const removeFeedback = async (id) => {
+    setBusy(true); setErr("");
+    const r = await fetch(`/api/feedback?id=${id}`, { method: "DELETE" })
+      .then((x) => x.json()).catch((e) => ({ error: String(e) }));
+    setBusy(false);
+    if (r.error) return setErr(r.error);
+    onChanged?.();
+  };
+
+  const send = async () => {
+    const author = getMe().trim();
+    if (!author) return setErr("ใส่ชื่อเล่นของคุณที่มุมขวาบนก่อนนะครับ จะได้รู้ว่าใครคอมเมนต์");
+    if (!vote && !text.trim()) return;
+    setBusy(true); setErr("");
+    const r = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ member_id: member.id, clip_id: clip?.id ?? null, author, vote, message: text }),
+    }).then((x) => x.json()).catch((e) => ({ error: String(e) }));
+    setBusy(false);
+    if (r.error) return setErr(r.error);
+    setText(""); setVote(null);
+    onChanged?.();
   };
 
   return (
@@ -48,47 +88,109 @@ export default function Lightbox({ open, onClose }) {
       <div className="lb-box" onClick={(e) => e.stopPropagation()}>
         <div className="lb-head">
           <div className="lb-title">
-            <b>{open.title}</b>
-            {open.sub && <span>{open.sub}</span>}
+            <b>{member.company_th || member.company_en}</b>
+            <span>
+              {member.owner_name} {member.nickname && `(${member.nickname})`} · ทีม {member.team}
+            </span>
           </div>
           <button className="lb-x" onClick={onClose} aria-label="ปิด">✕</button>
         </div>
 
-        {clip ? (
+        {err && <div className="msg err">{err}</div>}
+
+        {!clip ? (
+          <div className="lb-empty">ยังไม่มีคลิปสำหรับกิจการนี้</div>
+        ) : (
           <>
-            <video key={clip.id} src={clip.video_url} controls autoPlay playsInline preload="metadata" />
-
-            {clip.dialogue_th && <p className="lb-note">🗣 {clip.dialogue_th}</p>}
-
             {clips.length > 1 && (
               <div className="lb-vers">
-                <span className="lb-verslabel">{clips.length} เวอร์ชัน — กดเทียบได้</span>
-                {clips.map((c, n) => (
+                {clips.map((c) => (
                   <button
                     key={c.id}
-                    className={`chip ${n === i ? "on" : ""}`}
-                    onClick={() => setI(n)}
-                    title={c.dialogue_th || undefined}
+                    className={`chip ${c.id === clip.id ? "on" : ""}`}
+                    onClick={() => setCurId(c.id)}
                   >
-                    v{c.version} · {STATUS_TH[c.status] || c.status}
+                    v{c.version} {(ST[c.status] || {}).icon}
                   </button>
                 ))}
               </div>
             )}
 
-            <div className="lb-foot">
-              <span className={`pill ${clip.status === "approved" ? "ok" : clip.status === "rejected" ? "todo" : "draft"}`}>
-                v{clip.version} · {STATUS_TH[clip.status] || clip.status}
+            <video key={clip.id} src={clip.video_url} controls autoPlay playsInline preload="metadata" />
+
+            <div className="lb-meta">
+              <span className={`pill ${(ST[clip.status] || {}).cls}`}>
+                v{clip.version} · {(ST[clip.status] || {}).t || clip.status}
               </span>
-              <input className="lb-url" value={clip.video_url} readOnly onFocus={(e) => e.target.select()} />
-              <button className="ghost" onClick={copy}>{copied ? "คัดลอกแล้ว ✓" : "คัดลอกลิงก์"}</button>
-              <a className="btnlink" href={clip.video_url} target="_blank" rel="noreferrer">เปิดแท็บใหม่ ↗</a>
-              {open.memberId && <a className="btnlink" href={`/member/${open.memberId}`}>หน้ากิจการ →</a>}
+              {clip.dialogue_th && <span className="lb-say">🗣 {clip.dialogue_th}</span>}
+            </div>
+
+            <div className="lb-act">
+              {clip.status === "approved" ? (
+                <button className="ghost" disabled={busy} onClick={() => setStatus("draft")}>
+                  ↩︎ ยกเลิกว่าผ่าน
+                </button>
+              ) : (
+                <button disabled={busy} onClick={() => setStatus("approved")}>
+                  ✅ เอาเวอร์ชันนี้ — ผ่านแล้ว
+                </button>
+              )}
+              {clip.status !== "rejected" && (
+                <button className="ghost" disabled={busy} onClick={() => setStatus("rejected")}>
+                  ❌ ตัวนี้ตกไป
+                </button>
+              )}
+              <span className="dimtext">เลือกได้เวอร์ชันเดียว — ติ๊กใหม่ตัวเก่าจะตกไปเอง</span>
             </div>
           </>
-        ) : (
-          <div className="lb-empty">ยังไม่มีคลิปสำหรับกิจการนี้</div>
         )}
+
+        {/* ───── คอมเมนต์เวอร์ชันนี้ ───── */}
+        <div className="lb-say-box">
+          <div className="lb-sub">
+            คอมเมนต์{clip ? ` v${clip.version}` : ""}
+            <em> — เป็นแค่ความเห็น ยังไม่ใช่การสรุปว่าผ่าน ต้องกดส่งถึงจะบันทึก</em>
+          </div>
+          <div className="lb-votes">
+            <button className={`vote ${vote === "ok" ? "on-ok" : ""}`} onClick={() => setVote(vote === "ok" ? null : "ok")}>
+              👍 ดูโอเค
+            </button>
+            <button className={`vote ${vote === "revise" ? "on-rev" : ""}`} onClick={() => setVote(vote === "revise" ? null : "revise")}>
+              🔧 ขอแก้
+            </button>
+          </div>
+          <textarea
+            rows={2}
+            placeholder="เช่น พูดเร็วไป / อยากให้ฉากสว่างกว่านี้ / ชื่อบริษัทออกเสียงผิด"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <button disabled={busy || (!vote && !text.trim())} onClick={send}>
+            {busy ? "กำลังส่ง…" : "ส่งความเห็น"}
+          </button>
+        </div>
+
+        {/* ───── ประวัติ ───── */}
+        <div className="lb-hist">
+          <div className="lb-sub">ประวัติ ({history.length})</div>
+          {history.length === 0 && <div className="dimtext">ยังไม่มีใครคอมเมนต์</div>}
+          {history.map((f) => (
+            <div className="fb" key={f.id}>
+              <div className="who">
+                {f.author}
+                {f.clip_id && verOf[f.clip_id] ? ` · v${verOf[f.clip_id]}` : ""} ·{" "}
+                {new Date(f.created_at).toLocaleString("th-TH")}{" "}
+                {f.vote === "ok" ? "👍" : f.vote === "revise" ? "🔧" : ""}
+                {f.author === getMe().trim() && (
+                  <button className="lb-del" disabled={busy} onClick={() => removeFeedback(f.id)}>
+                    ลบ
+                  </button>
+                )}
+              </div>
+              {f.message}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

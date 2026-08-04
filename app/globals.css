@@ -222,17 +222,35 @@ header.top nav a:hover { color: var(--text); }
   border-radius: 9px; padding: 5px 12px; cursor: pointer; font-family: inherit; flex: none;
 }
 .lb-x:hover { border-color: #3d465e; background: var(--card2); }
-.lb-note {
-  margin: 12px 0 0; padding: 10px 13px; background: #0d0f15;
-  border: 1px solid var(--line); border-radius: 10px; color: #c3cbdb;
+.lb-vers { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+
+.lb-meta { display: flex; gap: 11px; align-items: baseline; flex-wrap: wrap; margin-top: 12px; }
+.lb-say { color: #c3cbdb; flex: 1 1 260px; min-width: 0; }
+
+.lb-act {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-top: 13px; padding-bottom: 15px; border-bottom: 1px solid var(--line);
 }
-.lb-vers { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
-.lb-verslabel { color: var(--dim); margin-right: 4px; }
-.lb-foot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
-.lb-url {
-  flex: 1 1 260px; min-width: 0; background: #0d0f15; border: 1px solid var(--line);
-  color: var(--dim); border-radius: 9px; padding: 8px 11px; font-family: inherit;
+
+.lb-sub { color: var(--accent); margin-bottom: 9px; }
+.lb-sub em { font-style: normal; color: var(--dim); }
+.lb-del {
+  background: transparent; border: 1px solid var(--line); color: var(--dim);
+  border-radius: 7px; padding: 1px 10px; margin-left: 9px; font-weight: 500; cursor: pointer;
 }
+.lb-del:hover { border-color: #6b2020; color: #ff9c9c; }
+.lb-say-box { padding: 15px 0; border-bottom: 1px solid var(--line); }
+.lb-votes { display: flex; gap: 8px; margin-bottom: 10px; }
+.lb-say-box textarea {
+  width: 100%; background: #0d0f15; border: 1px solid var(--line); color: var(--text);
+  border-radius: 9px; padding: 10px 12px; font-family: inherit; font-size: 16px;
+  line-height: 1.6; resize: vertical; margin-bottom: 10px;
+}
+.lb-say-box textarea:focus { outline: none; border-color: #4b5570; }
+
+.lb-hist { padding-top: 15px; }
+.lb-hist .fb:first-of-type { border-top: none; }
+
 .lb-empty { color: var(--dim); padding: 30px 0; text-align: center; }
 
 /* ───────── ส่วนที่หน้าอื่นใช้ร่วม ───────── */
