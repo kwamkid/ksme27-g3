@@ -1,0 +1,11 @@
+node_modules
+.next
+.env
+.env.local
+.env*.local
+.vercel
+.DS_Store
+*.tgz
+
+# ข้อมูลติดต่อสมาชิก — ห้ามขึ้น git (repo เป็น public)
+db/contacts.local.json

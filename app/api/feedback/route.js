@@ -1,0 +1,30 @@
+import { sql } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
+
+export async function POST(req) {
+  try {
+    const { member_id, clip_id, author, vote, message } = await req.json();
+    if (!member_id) return Response.json({ error: "ต้องระบุกิจการ" }, { status: 400 });
+    if (!message && !vote) return Response.json({ error: "ใส่ความเห็นหรือกดโหวตอย่างน้อยหนึ่งอย่าง" }, { status: 400 });
+
+    const [row] = await sql`
+      insert into feedback (member_id, clip_id, author, vote, message)
+      values (${member_id}, ${clip_id || null}, ${(author || "ไม่ระบุชื่อ").slice(0, 60)},
+              ${vote || null}, ${(message || "").slice(0, 2000)})
+      returning *`;
+    return Response.json({ ok: true, feedback: row });
+  } catch (e) {
+    return Response.json({ error: String(e.message || e) }, { status: 500 });
+  }
+}
+
+export async function DELETE(req) {
+  try {
+    const id = new URL(req.url).searchParams.get("id");
+    await sql`delete from feedback where id = ${Number(id)}`;
+    return Response.json({ ok: true });
+  } catch (e) {
+    return Response.json({ error: String(e.message || e) }, { status: 500 });
+  }
+}

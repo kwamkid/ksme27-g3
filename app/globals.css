@@ -1,0 +1,328 @@
+:root {
+  --bg: #0f1117;
+  --card: #181b25;
+  --card2: #1f2330;
+  --line: #2b3040;
+  --text: #e8ebf2;
+  --dim: #9aa3b8;
+  --accent: #ffcc4d;
+  --topbar: 70px;
+  --tc: #64748b; /* สีประจำทีม — การ์ดแต่ละใบ override เอง */
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Noto Sans Thai", "Sarabun", "Thonburi", Segoe UI, sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ขนาดตัวอักษรขั้นต่ำ 16px ทั้งเว็บ */
+body, input, textarea, select, button, small, em, i, b, th, td, label, figcaption { font-size: 16px; }
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; }
+
+.wrap { max-width: 1220px; margin: 0 auto; padding: 22px 18px 80px; }
+
+/* ───────── หัวเว็บ ───────── */
+header.top {
+  border-bottom: 1px solid var(--line);
+  background: #12141c;
+  position: sticky; top: 0; z-index: 30;
+}
+header.top .inner {
+  max-width: 1220px; margin: 0 auto; padding: 11px 18px;
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+}
+header.top h1 { font-size: 21px; margin: 0; color: var(--accent); white-space: nowrap; }
+header.top nav { display: flex; gap: 16px; }
+header.top nav a { color: var(--dim); }
+header.top nav a:hover { color: var(--text); }
+.me { margin-left: auto; color: var(--dim); display: flex; align-items: center; gap: 8px; }
+.me input {
+  background: #0d0f15; border: 1px solid var(--line); color: var(--text);
+  border-radius: 8px; padding: 7px 11px; width: 150px;
+}
+
+/* ───────── สรุปภาพรวม ───────── */
+.progress-bar { height: 10px; background: #232838; border-radius: 99px; overflow: hidden; }
+.progress-bar > div { height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 12px; margin: 18px 0 26px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 13px 16px; }
+.stat b { display: block; font-size: 28px; line-height: 1.25; }
+.stat span { color: var(--dim); }
+
+.team-head {
+  display: flex; align-items: center; gap: 11px; flex-wrap: wrap;
+  margin: 34px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
+}
+.team-head h2 { font-size: 20px; margin: 0; }
+.team-head small { color: var(--dim); font-weight: normal; }
+.dot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+.dot.sm { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ───────── แถบค้นหา + ตัวกรอง ───────── */
+.toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.search {
+  flex: 1 1 300px; background: #0d0f15; border: 1px solid var(--line); color: var(--text);
+  border-radius: 10px; padding: 11px 14px; font-family: inherit;
+}
+.search:focus { outline: none; border-color: #4b5570; }
+.views { display: flex; gap: 8px; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip {
+  background: var(--card); border: 1px solid var(--line); color: var(--dim);
+  border-radius: 99px; padding: 6px 14px; cursor: pointer; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 7px; line-height: 1.5;
+}
+.chip:hover { color: var(--text); border-color: #3d465e; }
+.chip.on { background: var(--card2); border-color: var(--accent); color: var(--accent); }
+.chip em { font-style: normal; opacity: .65; }
+
+/* ───────── การ์ดทำเนียบกิจการ ───────── */
+.dir-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+.dir {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: border-color .15s, transform .12s;
+}
+.dir:hover { border-color: var(--tc); transform: translateY(-2px); }
+
+.dir-cover {
+  position: relative; aspect-ratio: 4/3; overflow: hidden;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--tc) 26%, #0d0f15), #0d0f15);
+}
+.dir-char { width: 100%; height: 100%; object-fit: cover; object-position: 50% 8%; display: block; }
+.dir-char.ghost { opacity: .22; filter: grayscale(.5); }
+.dir-nochar {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: var(--dim); text-align: center; padding: 0 12px;
+}
+.dir-team {
+  position: absolute; top: 10px; left: 10px; background: rgba(10,12,18,.8);
+  border: 1px solid var(--tc); color: var(--tc); border-radius: 99px; padding: 2px 12px;
+}
+.dir-logo {
+  position: absolute; right: 12px; bottom: 12px; background: #fff;
+  border-radius: 10px; padding: 6px 9px; display: flex; align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,.45);
+}
+.dir-logo img { max-height: 30px; max-width: 92px; object-fit: contain; display: block; }
+
+/* รูปเจ้าของตัวจริง — วางทับบนการ์ดให้เห็นชัด ไม่ให้ถูกขอบตัด */
+.dir-face {
+  position: absolute; left: 12px; bottom: 12px; width: 94px; height: 94px;
+  border-radius: 50%; overflow: hidden; border: 3px solid var(--tc);
+  background: #0d0f15; display: grid; place-items: center;
+  box-shadow: 0 0 0 2px rgba(10,12,18,.85), 0 6px 18px rgba(0,0,0,.55);
+}
+.dir-face img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+.dir-face i { font-style: normal; color: #5a6379; font-size: 30px; }
+
+.dir-body { padding: 15px 16px 14px; flex: 1; }
+.dir-body h3 { margin: 0 0 3px; font-size: 18px; line-height: 1.45; }
+.dir-who { color: var(--dim); margin-bottom: 9px; }
+.dir-hl {
+  margin: 0 0 11px; color: #c3cbdb;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.dir-hl .warn { color: #ff9c9c; font-style: normal; }
+.dir-pills { display: flex; gap: 7px; flex-wrap: wrap; }
+
+.dir-act { display: flex; gap: 9px; padding: 0 16px 16px; align-items: center; flex-wrap: wrap; }
+
+.play {
+  background: var(--accent); color: #1a1300; border: none; font-weight: 700;
+  padding: 9px 16px; border-radius: 10px; cursor: pointer; font-family: inherit;
+}
+.play:disabled { background: #262b39; color: #6b7488; cursor: default; }
+.play.sm { padding: 6px 13px; }
+.btnlink { color: var(--dim); border-bottom: 1px dashed #3d465e; }
+.btnlink:hover { color: var(--text); }
+
+/* ───────── ตารางเช็กของ ───────── */
+.checklist { display: flex; flex-direction: column; gap: 9px; }
+
+.ck-head, .ck-row {
+  display: grid;
+  grid-template-columns: 62px minmax(190px, 1.5fr) 96px minmax(340px, 1.9fr) minmax(160px, 190px);
+  align-items: center; gap: 12px;
+}
+.ck-head { padding: 0 15px 10px; color: var(--dim); border-bottom: 1px solid var(--line); }
+.ck-head .ck-checks > span { text-align: center; line-height: 1.25; }
+
+.ck-row {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 15px;
+  transition: border-color .15s, background .15s;
+}
+.ck-row:hover { border-color: var(--tc); background: var(--card2); }
+
+.ck-av { position: relative; width: 50px; }
+.ck-av img {
+  width: 50px; height: 66px; object-fit: cover; object-position: 50% 6%;
+  border-radius: 9px; background: #0d0f15; display: block; border: 1px solid var(--line);
+}
+.ck-av .ph {
+  width: 50px; height: 66px; border-radius: 9px; border: 1px dashed #3d465e;
+  display: grid; place-items: center; color: #5a6379; font-style: normal;
+}
+.ck-av .ck-face {
+  position: absolute; right: -9px; bottom: -6px; width: 28px; height: 28px;
+  border-radius: 50%; border: 2px solid var(--card); object-position: 50% 28%;
+}
+
+.ck-name { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ck-name a { font-weight: 700; }
+.ck-name a:hover { color: var(--accent); }
+.ck-name small { color: var(--dim); }
+.ck-logo {
+  margin-top: 5px; background: #fff; border-radius: 7px; padding: 3px 6px;
+  max-height: 28px; max-width: 96px; object-fit: contain; align-self: flex-start;
+}
+.ck-team { color: var(--tc); font-weight: 700; }
+
+.ck-checks { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.ck-c { display: flex; flex-direction: column; align-items: center; }
+.ck-c .k { display: none; }
+.ck-c b { font-weight: 700; }
+.ck-c.yes b { color: #6ee7a0; }
+.ck-c.part b { color: var(--accent); cursor: help; }
+.ck-c.no b { color: #ff7d7d; }
+
+.ck-clip { display: flex; justify-content: flex-start; }
+
+/* ───────── กล่องดูคลิป (lightbox) ───────── */
+.lb {
+  position: fixed; inset: 0; z-index: 60; background: rgba(6,8,13,.86);
+  display: grid; place-items: center; padding: 20px;
+  backdrop-filter: blur(3px);
+}
+.lb-box {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  width: min(900px, 100%); max-height: 92vh; overflow: auto; padding: 16px;
+}
+.lb-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.lb-title { min-width: 0; }
+.lb-title b { display: block; font-size: 19px; }
+.lb-title span { color: var(--dim); }
+.lb-x {
+  margin-left: auto; background: transparent; border: 1px solid var(--line); color: var(--text);
+  border-radius: 9px; padding: 5px 12px; cursor: pointer; font-family: inherit; flex: none;
+}
+.lb-x:hover { border-color: #3d465e; background: var(--card2); }
+.lb-note {
+  margin: 12px 0 0; padding: 10px 13px; background: #0d0f15;
+  border: 1px solid var(--line); border-radius: 10px; color: #c3cbdb;
+}
+.lb-vers { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+.lb-verslabel { color: var(--dim); margin-right: 4px; }
+.lb-foot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.lb-url {
+  flex: 1 1 260px; min-width: 0; background: #0d0f15; border: 1px solid var(--line);
+  color: var(--dim); border-radius: 9px; padding: 8px 11px; font-family: inherit;
+}
+.lb-empty { color: var(--dim); padding: 30px 0; text-align: center; }
+
+/* ───────── ส่วนที่หน้าอื่นใช้ร่วม ───────── */
+.pill { padding: 3px 11px; border-radius: 99px; border: 1px solid var(--line); color: var(--dim); line-height: 1.5; }
+.pill.ok { background: #10331d; border-color: #1f6b39; color: #6ee7a0; }
+.pill.draft { background: #33290f; border-color: #7a5f18; color: #ffcc4d; }
+.pill.todo { background: #2a1414; border-color: #6b2020; color: #ff9c9c; }
+.pill.lead { background: #2a2140; border-color: #5b47a8; color: #c4b5fd; }
+.pill.miss { background: #2a1414; border-color: #6b2020; color: #ff9c9c; }
+
+.detail { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 22px; align-items: start; }
+
+.box { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 17px 19px; margin-bottom: 14px; }
+.box h3 { margin: 0 0 12px; font-size: 17px; color: var(--accent); }
+
+.field { margin-bottom: 15px; }
+.field label { display: block; color: var(--dim); margin-bottom: 5px; }
+.field textarea, .field input {
+  width: 100%; background: #0d0f15; border: 1px solid var(--line); color: var(--text);
+  border-radius: 9px; padding: 10px 12px; font-family: inherit; line-height: 1.6; resize: vertical;
+}
+.field textarea:focus, .field input:focus { outline: none; border-color: #4b5570; }
+
+button {
+  background: var(--accent); color: #1a1300; border: none; font-weight: 700;
+  padding: 10px 18px; border-radius: 10px; cursor: pointer; font-family: inherit;
+}
+button:disabled { opacity: .5; cursor: default; }
+button.ghost { background: transparent; border: 1px solid var(--line); color: var(--text); font-weight: 500; }
+button.vote { background: transparent; border: 1px solid var(--line); color: var(--text); }
+button.vote.on-ok { background: #14432a; border-color: #22c55e; color: #86efac; }
+button.vote.on-rev { background: #433014; border-color: #f59e0b; color: #fcd34d; }
+
+video { width: 100%; border-radius: 11px; background: #000; display: block; }
+
+.fb { border-top: 1px solid var(--line); padding: 11px 0; }
+.fb:first-of-type { border-top: none; }
+.fb .who { color: var(--dim); margin-bottom: 3px; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 500; }
+.box table { display: block; overflow-x: auto; white-space: normal; }
+
+.msg { padding: 11px 14px; border-radius: 10px; margin-bottom: 12px; }
+.msg.err { background: #35161a; color: #ffb4b4; }
+.msg.ok { background: #14331f; color: #86efac; }
+.dimtext { color: var(--dim); }
+pre.script { white-space: pre-wrap; font-family: inherit; margin: 0; color: #c8d0e0; }
+
+/* ───────── จอเล็ก ───────── */
+@media (min-width: 981px) {
+  .ck-head { position: sticky; top: var(--topbar); background: var(--bg); z-index: 5; padding-top: 10px; }
+}
+
+@media (max-width: 1080px) {
+  .detail { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 980px) {
+  .ck-head { display: none; }
+  .ck-row {
+    grid-template-columns: 62px minmax(0, 1fr);
+    grid-template-areas: "av name" "av team" "chk chk" "clip clip";
+    row-gap: 10px; align-items: start; padding: 14px;
+  }
+  .ck-av { grid-area: av; }
+  .ck-name { grid-area: name; }
+  .ck-team { grid-area: team; }
+  .ck-checks { grid-area: chk; display: flex; flex-wrap: wrap; gap: 8px; }
+  .ck-c {
+    flex-direction: row; align-items: center; gap: 7px;
+    border: 1px solid var(--line); border-radius: 99px; padding: 3px 12px;
+  }
+  .ck-c .k { display: inline; font-style: normal; color: var(--dim); }
+  .ck-clip { grid-area: clip; }
+}
+
+@media (max-width: 640px) {
+  .wrap { padding: 16px 13px 70px; }
+  header.top .inner { padding: 10px 13px; gap: 12px; }
+  header.top h1 { font-size: 19px; }
+  .me { margin-left: 0; width: 100%; }
+  .me input { flex: 1; width: auto; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat b { font-size: 24px; }
+  .dir-grid { grid-template-columns: 1fr; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  /* toolbar เป็นแนวตั้งแล้ว flex-basis จะไปคุมความสูงแทน — ต้องรีเซ็ต */
+  .search { flex: 0 0 auto; width: 100%; }
+  .lb { padding: 0; }
+  .lb-box { max-height: 100vh; height: 100%; border-radius: 0; border: none; }
+}
