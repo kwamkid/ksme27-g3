@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { avatarSrc, ownerSrc, logoSrc, heroSrc } from "@/lib/assets";
 import Lightbox from "./lightbox";
 import Icon from "./icons";
+import { WORK, workStatus, openComments } from "@/lib/status";
 
 // 2 = มีแล้ว · 1 = มีไฟล์แต่ยังใช้บนเว็บไม่ได้ (เช่น .ai) · 0 = ยังไม่มี
 const CHECKS = [
@@ -15,27 +16,25 @@ const CHECKS = [
   { key: "ecard", label: "e-card" },
 ];
 
-// ตัวกรองเรียงตามลำดับงานที่ทำจริง: ของที่ต้องจัดการก่อน → ของที่เสร็จแล้ว
+// ตัวกรองไล่ตามลำดับงาน: ของที่ต้องลงมือก่อน → ของที่จบแล้ว
 const FILTERS = [
   { key: "all", label: "ทั้งหมด" },
-  { key: "todocomment", label: "คอมเมนต์รอแก้", icon: "comment" },
-  { key: "pending", label: "ยังไม่ผ่าน", icon: "clip" },
-  { key: "noclip", label: "ยังไม่มีคลิป", icon: "clock" },
+  { key: "revise", label: WORK.revise.label, icon: WORK.revise.icon },
+  { key: "review", label: WORK.review.label, icon: WORK.review.icon },
+  { key: "noclip", label: WORK.noclip.label, icon: WORK.noclip.icon },
   { key: "nochar", label: "ยังไม่มีตัวละคร", icon: "user" },
-  { key: "approved", label: "ผ่านแล้ว", icon: "check" },
+  { key: "approved", label: WORK.approved.label, icon: WORK.approved.icon },
 ];
 
 // เงื่อนไขของแต่ละตัวกรอง เก็บไว้ที่เดียวจะได้ไม่หลุดกันระหว่างตัวนับกับตัวกรอง
 const MATCH = {
   all: () => true,
-  todocomment: (m) => m.openComments > 0,
-  pending: (m) => m.clips.length > 0 && !m.approved,
-  noclip: (m) => m.clips.length === 0,
+  revise: (m) => m.work.key === "revise",
+  review: (m) => m.work.key === "review",
+  noclip: (m) => m.work.key === "noclip",
+  approved: (m) => m.work.key === "approved",
   nochar: (m) => !m.char,
-  approved: (m) => m.approved,
 };
-
-const CLIP_TH = { approved: "ผ่านแล้ว", rejected: "ต้องแก้", draft: "รอรีวิว" };
 
 export default function Directory() {
   const [data, setData] = useState(null);
@@ -78,8 +77,8 @@ export default function Directory() {
         missing: CHECKS.filter((c) => checks[c.key] < 2).map((c) => c.label),
         latest,
         approved: m.clips.some((c) => c.status === "approved"),
-        // คอมเมนต์ที่ยังไม่มีใครติ๊กว่าทำแล้ว = งานที่ยังค้าง
-        openComments: m.feedback.filter((f) => !f.done).length,
+        work: workStatus(m),
+        openComments: openComments(m).length,
       };
     });
   }, [data]);
@@ -133,8 +132,7 @@ export default function Directory() {
   const approved = rows.filter((m) => m.approved).length;
   const withClip = rows.filter((m) => m.clips.length).length;
   const withChar = rows.filter((m) => m.char).length;
-  const openComments = rows.reduce((n, m) => n + m.openComments, 0);
-  const pending = rows.filter((m) => m.clips.length && !m.approved).length;
+  const nOf = (key) => rows.filter((m) => m.work.key === key).length;
 
   const lbMember = rows.find((m) => m.id === lbId) || null;
 
@@ -149,10 +147,10 @@ export default function Directory() {
       </div>
 
       <div className="stats">
-        <div className="stat"><b>{approved}/{total}</b><span>คลิปผ่านแล้ว</span></div>
-        <div className={`stat ${pending ? "warn" : ""}`}><b>{pending}</b><span>รอรีวิว/ยังไม่ผ่าน</span></div>
-        <div className={`stat ${openComments ? "warn" : ""}`}><b>{openComments}</b><span>คอมเมนต์รอแก้</span></div>
-        <div className="stat"><b>{total - withClip}</b><span>ยังไม่มีคลิป</span></div>
+        <div className="stat"><b>{approved}/{total}</b><span>ผ่านแล้ว</span></div>
+        <div className={`stat ${nOf("revise") ? "warn" : ""}`}><b>{nOf("revise")}</b><span>รอแก้ — คุณต้องทำ</span></div>
+        <div className="stat"><b>{nOf("review")}</b><span>รอรีวิว — รอเจ้าตัว</span></div>
+        <div className="stat"><b>{nOf("noclip")}</b><span>ยังไม่มีคลิป</span></div>
         <div className="stat"><b>{withChar}/{total}</b><span>มีตัวละครแล้ว</span></div>
       </div>
 
@@ -257,18 +255,12 @@ export default function Directory() {
                       {m.highlight || <em className="warn">ยังไม่มีข้อมูลจุดเด่น — ช่วยกันเติมได้</em>}
                     </p>
                     <div className="dir-pills">
-                      <span className={`pill ${m.approved ? "ok" : m.clips.length ? "draft" : "todo"}`}>
-                        {m.approved ? (
-                          <><Icon name="check" /> ผ่านแล้ว</>
-                        ) : m.clips.length ? (
-                          <><Icon name="clip" /> v{m.latest.version} {CLIP_TH[m.latest.status] || ""}</>
-                        ) : (
-                          <><Icon name="clock" /> ยังไม่มีคลิป</>
-                        )}
+                      <span className={`pill ${m.work.cls}`} title={m.work.who}>
+                        <Icon name={m.work.icon} />
+                        {m.latest ? `v${m.latest.version} ` : ""}{m.work.label}
                       </span>
-                      {m.clips.length > 1 && <span className="pill">{m.clips.length} เวอร์ชัน</span>}
                       {m.openComments > 0 ? (
-                        <span className="pill miss"><Icon name="comment" /> {m.openComments} รอแก้</span>
+                        <span className="pill miss"><Icon name="comment" /> {m.openComments}</span>
                       ) : (
                         m.feedback.length > 0 && <span className="pill"><Icon name="comment" /> {m.feedback.length}</span>
                       )}
@@ -341,10 +333,10 @@ export default function Directory() {
                   <span className="ck-clip">
                     {m.clips.length ? (
                       <button className="play sm" onClick={() => setLbId(m.id)}>
-                        <Icon name="play" /> v{m.latest.version} {CLIP_TH[m.latest.status] || ""}
+                        <Icon name="play" /> v{m.latest.version} {m.work.label}
                       </button>
                     ) : (
-                      <span className="pill todo">ยังไม่มีคลิป</span>
+                      <span className="pill todo"><Icon name="clock" /> ยังไม่มีคลิป</span>
                     )}
                   </span>
                 </div>

@@ -3,6 +3,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { getMe } from "../../me";
 import { avatarSrc, ownerSrc, logoSrc } from "@/lib/assets";
 import Icon from "../../icons";
+import { workStatus, openComments } from "@/lib/status";
 
 // ช่องข้อความที่สูงพอดีเนื้อหา ไม่เหลือที่ว่างเปล่า และไม่ต้องเลื่อนอ่าน
 function AutoTextarea({ value, onChange, placeholder }) {
@@ -109,6 +110,8 @@ export default function MemberPage({ params }) {
 
   // ปุ่มผ่าน/ยังไม่ผ่าน — กดสลับไปมาได้
   // ถ้ามีเวอร์ชันที่ผ่านอยู่แล้วให้ปุ่มคุมตัวนั้น ถ้ายังไม่มีให้คุมเวอร์ชันล่าสุด
+  const work = workStatus(m);
+  const nOpen = openComments(m).length;
   const approvedClip = m.clips.find((c) => c.status === "approved");
   const targetClip = approvedClip || m.clips[0] || null;
 
@@ -146,6 +149,13 @@ export default function MemberPage({ params }) {
           <h2>{m.company_th}</h2>
           <div className="dimtext">
             {m.company_en} · {m.owner_name} {m.nickname && `(${m.nickname})`} · ทีม {m.team} {m.code && `· ${m.code}`}
+          </div>
+          <div className="mhead-status">
+            <span className={`pill ${work.cls}`}>
+              <Icon name={work.icon} />
+              {m.clips[0] ? `v${m.clips[0].version} ` : ""}{work.label}
+            </span>
+            <span className="dimtext">{work.who}</span>
           </div>
         </div>
         {logoSrc(m.id) && (
@@ -248,7 +258,11 @@ export default function MemberPage({ params }) {
                   : `เอาอันนี้ (v${targetClip.version})`}
               </button>
               <span className="dimtext">
-                {approvedClip ? "กดอีกครั้งเพื่อยกเลิก" : "กดเมื่อคลิปนี้ใช้ได้แล้ว"}
+                {approvedClip
+                  ? "กดอีกครั้งเพื่อยกเลิก"
+                  : nOpen
+                  ? `ยังมีคอมเมนต์ค้าง ${nOpen} ข้อ — ติ๊กว่าทำแล้วก่อนจะกลับเป็นรอรีวิว`
+                  : "กดเมื่อคลิปนี้ใช้ได้แล้ว"}
               </span>
             </div>
           </div>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { getMe } from "./me";
 import Icon from "./icons";
+import { workStatus } from "@/lib/status";
 
 const ST = {
   approved: { t: "ผ่านแล้ว", cls: "ok", icon: "check" },
@@ -42,6 +43,7 @@ export default function Lightbox({ member, onClose, onChanged }) {
   if (!member) return null;
 
   const clip = clips.find((c) => c.id === curId) || clips[0] || null;
+  const work = workStatus(member);
   const verOf = Object.fromEntries(clips.map((c) => [c.id, c.version]));
   const history = member.feedback || [];
 
@@ -102,6 +104,9 @@ export default function Lightbox({ member, onClose, onChanged }) {
             <b>{member.company_th || member.company_en}</b>
             <span>
               {member.owner_name} {member.nickname && `(${member.nickname})`} · ทีม {member.team}
+            </span>
+            <span className={`pill ${work.cls} lb-work`}>
+              <Icon name={work.icon} /> {work.label}
             </span>
           </div>
           <button className="lb-x" onClick={onClose} aria-label="ปิด">✕</button>
