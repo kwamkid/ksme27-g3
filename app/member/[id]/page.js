@@ -25,18 +25,20 @@ function AutoTextarea({ value, onChange, placeholder }) {
   );
 }
 
+// [ชื่อฟิลด์, ป้าย, เป็นช่องหลายบรรทัดไหม, กินเต็มแถวไหม]
+// ช่องสั้นวางคู่กัน 2 คอลัมน์ ส่วนช่องยาวที่ต้องอ่านเยอะให้กินเต็มแถว
 const FIELDS = [
-  ["company_th", "ชื่อกิจการ (ไทย)", 1],
-  ["owner_name", "ชื่อ-นามสกุลเจ้าของ", 1],
-  ["nickname", "ชื่อเล่น", 1],
-  ["business", "ทำธุรกิจอะไร", 3],
-  ["highlight", "⭐ จุดเด่น (สำคัญที่สุด — ใช้เขียนบทคลิป)", 5],
-  ["benefit", "ลูกค้าได้อะไร", 3],
-  ["products", "สินค้า/บริการหลัก", 3],
-  ["scene_idea", "🎬 ฉากในคลิป (signature move)", 5],
-  ["dialogue_th", "🗣 บทพูดไทยในคลิป", 2],
-  ["contact", "ติดต่อ", 1],
-  ["note", "หมายเหตุ", 2],
+  ["company_th", "ชื่อกิจการ (ไทย)", false, false],
+  ["owner_name", "ชื่อ-นามสกุลเจ้าของ", false, false],
+  ["nickname", "ชื่อเล่น", false, false],
+  ["contact", "ติดต่อ", false, false],
+  ["business", "ทำธุรกิจอะไร", true, false],
+  ["benefit", "ลูกค้าได้อะไร", true, false],
+  ["products", "สินค้า/บริการหลัก", true, false],
+  ["dialogue_th", "🗣 บทพูดไทยในคลิป", true, false],
+  ["highlight", "⭐ จุดเด่น (สำคัญที่สุด — ใช้เขียนบทคลิป)", true, true],
+  ["scene_idea", "🎬 ฉากในคลิป (signature move)", true, true],
+  ["note", "หมายเหตุ", true, true],
 ];
 
 export default function MemberPage({ params }) {
@@ -158,16 +160,18 @@ export default function MemberPage({ params }) {
         <div>
           <div className="box">
             <h3>ข้อมูลกิจการ — ทุกคนแก้ได้</h3>
-            {FIELDS.map(([f, label, rows]) => (
-              <div className="field" key={f}>
-                <label>{label}</label>
-                {rows > 1 ? (
-                  <AutoTextarea value={form[f] ?? ""} onChange={(v) => setForm({ ...form, [f]: v })} />
-                ) : (
-                  <input value={form[f] ?? ""} onChange={(e) => setForm({ ...form, [f]: e.target.value })} />
-                )}
-              </div>
-            ))}
+            <div className="fields">
+              {FIELDS.map(([f, label, multi, full]) => (
+                <div className={`field ${full ? "full" : ""}`} key={f}>
+                  <label>{label}</label>
+                  {multi ? (
+                    <AutoTextarea value={form[f] ?? ""} onChange={(v) => setForm({ ...form, [f]: v })} />
+                  ) : (
+                    <input value={form[f] ?? ""} onChange={(e) => setForm({ ...form, [f]: e.target.value })} />
+                  )}
+                </div>
+              ))}
+            </div>
             <button onClick={save} disabled={!dirty || saving}>
               {saving ? "กำลังบันทึก…" : "บันทึก"}
             </button>
@@ -235,10 +239,10 @@ export default function MemberPage({ params }) {
                 onClick={toggleApprove}
               >
                 {!targetClip
-                  ? "ยังไม่มีคลิปให้ติ๊ก"
+                  ? "ยังไม่มีคลิปให้เลือก"
                   : approvedClip
-                  ? `✅ ผ่านแล้ว (v${approvedClip.version})`
-                  : `ติ๊กว่าผ่าน (v${targetClip.version})`}
+                  ? `✅ เอาอันนี้ (v${approvedClip.version})`
+                  : `เอาอันนี้ (v${targetClip.version})`}
               </button>
               <span className="dimtext">
                 {approvedClip ? "กดอีกครั้งเพื่อยกเลิก" : "กดเมื่อคลิปนี้ใช้ได้แล้ว"}

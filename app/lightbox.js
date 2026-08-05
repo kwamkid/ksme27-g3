@@ -141,7 +141,7 @@ export default function Lightbox({ member, onClose, onChanged }) {
                 disabled={busy}
                 onClick={() => setStatus(clip.status === "approved" ? "draft" : "approved")}
               >
-                {clip.status === "approved" ? `✅ ผ่านแล้ว (v${clip.version})` : `ติ๊กว่าผ่าน (v${clip.version})`}
+                {clip.status === "approved" ? `✅ เอาอันนี้ (v${clip.version})` : `เอาอันนี้ (v${clip.version})`}
               </button>
               <span className="dimtext">
                 {clip.status === "approved"

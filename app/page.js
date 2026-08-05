@@ -14,13 +14,25 @@ const CHECKS = [
   { key: "ecard", label: "e-card" },
 ];
 
+// ตัวกรองเรียงตามลำดับงานที่ทำจริง: ของที่ต้องจัดการก่อน → ของที่เสร็จแล้ว
 const FILTERS = [
   { key: "all", label: "ทั้งหมด" },
-  { key: "clip", label: "มีคลิปแล้ว" },
-  { key: "noclip", label: "ยังไม่มีคลิป" },
-  { key: "missing", label: "ยังขาดของ" },
+  { key: "todocomment", label: "💬 คอมเมนต์รอแก้" },
+  { key: "pending", label: "🎬 ยังไม่ผ่าน" },
+  { key: "noclip", label: "⏳ ยังไม่มีคลิป" },
   { key: "nochar", label: "ยังไม่มีตัวละคร" },
+  { key: "approved", label: "✅ ผ่านแล้ว" },
 ];
+
+// เงื่อนไขของแต่ละตัวกรอง เก็บไว้ที่เดียวจะได้ไม่หลุดกันระหว่างตัวนับกับตัวกรอง
+const MATCH = {
+  all: () => true,
+  todocomment: (m) => m.openComments > 0,
+  pending: (m) => m.clips.length > 0 && !m.approved,
+  noclip: (m) => m.clips.length === 0,
+  nochar: (m) => !m.char,
+  approved: (m) => m.approved,
+};
 
 const CLIP_TH = { approved: "ผ่านแล้ว", rejected: "ต้องแก้", draft: "รอรีวิว" };
 
@@ -65,6 +77,8 @@ export default function Directory() {
         missing: CHECKS.filter((c) => checks[c.key] < 2).map((c) => c.label),
         latest,
         approved: m.clips.some((c) => c.status === "approved"),
+        // คอมเมนต์ที่ยังไม่มีใครติ๊กว่าทำแล้ว = งานที่ยังค้าง
+        openComments: m.feedback.filter((f) => !f.done).length,
       };
     });
   }, [data]);
@@ -83,10 +97,7 @@ export default function Directory() {
     const kw = q.trim().toLowerCase();
     const list = rows.filter((m) => {
       if (team && m.team !== team) return false;
-      if (filter === "clip" && !m.clips.length) return false;
-      if (filter === "noclip" && m.clips.length) return false;
-      if (filter === "missing" && !m.missing.length) return false;
-      if (filter === "nochar" && m.char) return false;
+      if (!(MATCH[filter] || MATCH.all)(m)) return false;
       if (!kw) return true;
       return [m.company_th, m.company_en, m.owner_name, m.nickname, m.code, m.business]
         .filter(Boolean)
@@ -121,20 +132,13 @@ export default function Directory() {
   const approved = rows.filter((m) => m.approved).length;
   const withClip = rows.filter((m) => m.clips.length).length;
   const withChar = rows.filter((m) => m.char).length;
-  const needStuff = rows.filter((m) => m.missing.length).length;
-  const comments = rows.reduce((n, m) => n + m.feedback.length, 0);
+  const openComments = rows.reduce((n, m) => n + m.openComments, 0);
+  const pending = rows.filter((m) => m.clips.length && !m.approved).length;
 
   const lbMember = rows.find((m) => m.id === lbId) || null;
 
   const countOf = (key) =>
-    rows.filter((m) => {
-      if (team && m.team !== team) return false;
-      if (key === "clip") return m.clips.length > 0;
-      if (key === "noclip") return m.clips.length === 0;
-      if (key === "missing") return m.missing.length > 0;
-      if (key === "nochar") return !m.char;
-      return true;
-    }).length;
+    rows.filter((m) => (team ? m.team === team : true) && (MATCH[key] || MATCH.all)(m)).length;
 
   return (
     <div className="wrap">
@@ -145,10 +149,10 @@ export default function Directory() {
 
       <div className="stats">
         <div className="stat"><b>{approved}/{total}</b><span>คลิปผ่านแล้ว</span></div>
-        <div className="stat"><b>{withClip}</b><span>กิจการที่มีคลิปแล้ว</span></div>
+        <div className={`stat ${pending ? "warn" : ""}`}><b>{pending}</b><span>รอรีวิว/ยังไม่ผ่าน</span></div>
+        <div className={`stat ${openComments ? "warn" : ""}`}><b>{openComments}</b><span>คอมเมนต์รอแก้</span></div>
+        <div className="stat"><b>{total - withClip}</b><span>ยังไม่มีคลิป</span></div>
         <div className="stat"><b>{withChar}/{total}</b><span>มีตัวละครแล้ว</span></div>
-        <div className="stat"><b>{needStuff}</b><span>ยังขาดของ</span></div>
-        <div className="stat"><b>{comments}</b><span>ความเห็นทั้งหมด</span></div>
       </div>
 
       {/* ───── แถบค้นหา + ตัวกรอง ───── */}
@@ -243,29 +247,28 @@ export default function Directory() {
                     <div className="dir-pills">
                       <span className={`pill ${m.approved ? "ok" : m.clips.length ? "draft" : "todo"}`}>
                         {m.approved
-                          ? "✅ คลิปผ่านแล้ว"
+                          ? "✅ ผ่านแล้ว"
                           : m.clips.length
                           ? `🎬 v${m.latest.version} ${CLIP_TH[m.latest.status] || ""}`
                           : "⏳ ยังไม่มีคลิป"}
                       </span>
-                      {m.approved && m.latest.status !== "approved" && (
-                        <span className="pill draft">🎬 มี v{m.latest.version} ใหม่รอรีวิว</span>
-                      )}
                       {m.clips.length > 1 && <span className="pill">{m.clips.length} เวอร์ชัน</span>}
-                      {m.feedback.length > 0 && <span className="pill">💬 {m.feedback.length}</span>}
-                      {m.missing.map((x) => (
-                        <span className="pill miss" key={x}>ขาด{x}</span>
-                      ))}
+                      {m.openComments > 0 ? (
+                        <span className="pill miss">💬 {m.openComments} รอแก้</span>
+                      ) : (
+                        m.feedback.length > 0 && <span className="pill">💬 {m.feedback.length}</span>
+                      )}
+                      {m.missing.length > 0 && (
+                        <span className="pill miss" title={`ยังไม่ได้ส่ง: ${m.missing.join(" · ")}`}>
+                          ขาดรูป {m.missing.length}
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div className="dir-act">
                     <button className="play" disabled={!m.clips.length} onClick={() => setLbId(m.id)}>
-                      {!m.clips.length
-                        ? "ยังไม่มีคลิป"
-                        : m.clips.length > 1
-                        ? `▶ ดูคลิป (${m.clips.length} เวอร์ชัน)`
-                        : `▶ ดูคลิป v${m.latest.version}`}
+                      {m.clips.length ? "▶ ดูคลิป" : "ยังไม่มีคลิป"}
                     </button>
                     <a className="btnlink" href={`/member/${m.id}`}>รายละเอียด →</a>
                   </div>
