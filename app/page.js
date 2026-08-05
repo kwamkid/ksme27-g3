@@ -177,20 +177,36 @@ export default function Directory() {
 
   return (
     <div className="wrap">
-      {/* ───── สรุปภาพรวม ───── */}
-      <div className="progress-bar" title={`คลิปผ่านแล้ว ${approved}/${total}`}>
-        <div style={{ width: `${(approved / total) * 100}%` }} />
-      </div>
+      {/* ───── บนสุด: คลิปที่ฟันธงแล้ว | ตัวเลขสรุป ───── */}
+      <div className="topgrid">
+        <HeroReel members={doneList} />
 
-      <div className="stats">
-        <div className="stat"><b>{approved}/{total}</b><span>ผ่านแล้ว</span></div>
-        <div className={`stat ${nOf("revise") ? "warn" : ""}`}><b>{nOf("revise")}</b><span>รอแก้ — คุณต้องทำ</span></div>
-        <div className="stat"><b>{nOf("review")}</b><span>รอรีวิว — รอเจ้าตัว</span></div>
-        <div className="stat"><b>{nOf("noclip")}</b><span>ยังไม่มีคลิป</span></div>
-        <div className="stat"><b>{withChar}/{total}</b><span>มีตัวละครแล้ว</span></div>
+        {/* กดที่การ์ดแล้วกรองรายชื่อด้านล่างให้เลย */}
+        <div className="stats">
+          <button className={`stat big ${filter === "approved" ? "on" : ""}`} onClick={() => setFilter("approved")}>
+            <b>{approved}/{total}</b>
+            <span>ผ่านแล้ว</span>
+            <div className="progress-bar">
+              <div style={{ width: `${(approved / total) * 100}%` }} />
+            </div>
+          </button>
+          <button
+            className={`stat ${nOf("revise") ? "warn" : ""} ${filter === "revise" ? "on" : ""}`}
+            onClick={() => setFilter("revise")}
+          >
+            <b>{nOf("revise")}</b><span>รอแก้ — คุณต้องทำ</span>
+          </button>
+          <button className={`stat ${filter === "review" ? "on" : ""}`} onClick={() => setFilter("review")}>
+            <b>{nOf("review")}</b><span>รอเจ้าของรีวิว</span>
+          </button>
+          <button className={`stat ${filter === "noclip" ? "on" : ""}`} onClick={() => setFilter("noclip")}>
+            <b>{nOf("noclip")}</b><span>ยังไม่มีคลิป</span>
+          </button>
+          <button className={`stat ${filter === "nochar" ? "on" : ""}`} onClick={() => setFilter("nochar")}>
+            <b>{withChar}/{total}</b><span>มีตัวละครแล้ว</span>
+          </button>
+        </div>
       </div>
-
-      <HeroReel members={doneList} />
 
       {/* ───── แถบค้นหา + ตัวกรอง ───── */}
       <section>

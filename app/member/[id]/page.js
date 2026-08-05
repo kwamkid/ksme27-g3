@@ -271,8 +271,11 @@ export default function MemberPage({ params }) {
                   "ยังไม่มีคลิปให้เลือก"
                 ) : (
                   <>
-                    <Icon name={approvedClip ? "circleCheck" : "circle"} />
-                    {approvedClip ? `เอาอันนี้แล้ว (v${approvedClip.version})` : `เอาอันนี้ (v${targetClip.version})`}
+                    {approvedClip ? (
+                      <><Icon name="circleCheck" /> เอาอันนี้แล้ว (v{approvedClip.version})</>
+                    ) : (
+                      <><Icon name="arrowRight" className="nudge" /> เอาอันนี้เลย (v{targetClip.version})</>
+                    )}
                   </>
                 )}
               </button>

@@ -61,13 +61,28 @@ header.top nav a:hover { color: var(--text); }
 .progress-bar { height: 10px; background: #232838; border-radius: 99px; overflow: hidden; }
 .progress-bar > div { height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 12px; margin: 18px 0 26px; }
-.stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 13px 16px; }
+/* บนสุด: คลิปซ้าย ตัวเลขสรุปขวา */
+.topgrid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px; align-items: stretch; margin-bottom: 8px; }
+
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 12px; margin: 0; }
+/* "ผ่านแล้ว" กินเต็มแถวบน พร้อมหลอดความคืบหน้าในตัว ที่เหลือแบ่งครึ่ง */
+.stats .stat.big { grid-column: 1 / -1; }
+.stats .stat.big .progress-bar { margin-top: 10px; }
+.stat {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 13px 16px; text-align: left; font-family: inherit; color: var(--text);
+  cursor: pointer; transition: border-color .15s, background .15s, transform .1s;
+}
+.stat:hover { border-color: #3d465e; background: var(--card2); }
+.stat:active { transform: translateY(1px); }
+/* การ์ดที่ตรงกับตัวกรองที่เลือกอยู่ */
+.stat.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .stat b { display: block; font-size: 28px; line-height: 1.25; }
 .stat span { color: var(--dim); }
 /* ตัวเลขที่ยังมีงานค้าง ให้สะดุดตาว่าต้องจัดการ */
 .stat.warn { border-color: #7a5f18; background: #241d0c; }
 .stat.warn b { color: var(--accent); }
+.stat.warn.on { border-color: var(--accent); }
 
 .team-head {
   display: flex; align-items: center; gap: 11px; flex-wrap: wrap;
@@ -83,29 +98,55 @@ header.top nav a:hover { color: var(--text); }
 .clearfilter:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ───────── แถบโชว์ผลงาน — เล่นคลิปคนที่ฟันธงแล้ววนไปเรื่อยๆ ───────── */
-.reel { margin: 6px 0 26px; }
-.reel-head {
-  color: var(--dim); display: flex; align-items: center; gap: 8px;
-  margin-bottom: 11px; flex-wrap: wrap;
-}
-.reel-head b { color: #6ee7a0; }
-.reel-head small { color: #6b7488; }
+.reel { margin: 0; }
+.reel-body { max-width: none; }
 
-.reel-body { max-width: 560px; }
-
-.reel-stage { position: relative; }
+.reel { display: flex; flex-direction: column; }
+.reel-stage { position: relative; flex: 1; min-height: 0; }
 .reel-stage video {
-  width: 100%; aspect-ratio: 16/9; object-fit: cover;
+  width: 100%; height: 100%; object-fit: cover;
   border-radius: 14px; background: #000; display: block;
   border: 1px solid var(--line);
 }
+/* ปุ่มเลื่อนคน — ลอยทับซ้าย/ขวาในตัววิดีโอ แบบเครื่องเล่นทั่วไป */
+.reel-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(10,12,18,.62); border: 1px solid rgba(255,255,255,.14); color: #fff;
+  width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; padding: 0;
+  opacity: 0; transition: opacity .18s, background .18s;
+}
+.reel-nav.left { left: 10px; }
+.reel-nav.right { right: 10px; }
+.reel-nav:hover { background: rgba(10,12,18,.9); }
+/* โผล่เมื่อเอาเมาส์ชี้ — จอสัมผัสไม่มี hover เลยให้เห็นตลอด */
+.reel-stage:hover .reel-nav, .reel-nav:focus-visible { opacity: 1; }
+@media (hover: none) { .reel-nav { opacity: 1; } }
+
+/* ปุ่มเสียง — ลอยมุมขวาล่างของวิดีโอ */
 .reel-mute {
-  position: absolute; right: 9px; bottom: 9px;
-  background: rgba(10,12,18,.82); border: 1px solid var(--line); color: var(--text);
+  position: absolute; right: 10px; bottom: 10px;
+  background: rgba(10,12,18,.72); border: 1px solid rgba(255,255,255,.14); color: #fff;
   border-radius: 9px; padding: 7px; cursor: pointer; font-family: inherit;
   display: flex; align-items: center; line-height: 1;
 }
-.reel-mute:hover { border-color: #3d465e; background: rgba(10,12,18,.95); }
+.reel-mute:hover { background: rgba(10,12,18,.95); }
+
+/* ป้ายจำนวนคน — มุมซ้ายบนในวิดีโอ จะได้ไม่กินความสูงนอกกรอบ */
+.reel-tag {
+  position: absolute; left: 10px; top: 10px;
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(10,12,18,.72); border: 1px solid rgba(255,255,255,.14);
+  color: #e8ebf2; border-radius: 99px; padding: 4px 13px;
+}
+.reel-tag b { color: #6ee7a0; }
+
+/* ตัวโหลดคลิปถัดไป — ต้องอยู่ใน DOM ให้เบราว์เซอร์ดึงไฟล์ แต่ไม่ต้องเห็น */
+.reel-prefetch { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* เปลี่ยนคลิปแล้วค่อยๆ จางเข้า แทนที่จะกระพริบเป็นจอดำ */
+.reel-stage video { transition: opacity .22s ease; }
+.reel-stage video.loading { opacity: .35; }
 
 .dot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
 .dot.sm { width: 10px; height: 10px; border-radius: 3px; }
@@ -441,40 +482,40 @@ header.top nav a:hover { color: var(--text); }
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   margin-top: 16px; padding-top: 15px; border-top: 1px solid var(--line);
 }
-/* ปุ่มเลือกเวอร์ชัน — ต้องดูออกทันทีว่ากดไปหรือยัง
-   ยังไม่กด = โครงเขียว พื้นโปร่ง เรืองแสงเป็นจังหวะเบาๆ ให้รู้ว่ากดได้
-   กดแล้ว   = เขียวทึบเต็มใบ ติ๊กถูก หยุดนิ่ง */
+/* ปุ่มเลือกเวอร์ชัน
+   ยังไม่กด = ปุ่มเขียวทึบเต็มบรรทัด มีลูกศรกะพริบชี้ว่า "โอเคแล้วกดตรงนี้"
+   กดแล้ว   = พื้นเข้มขอบเขียว ติ๊กถูก ไม่ใช่ปุ่มชวนกดอีกต่อไป */
+.approve, .lb-act { flex-direction: column; align-items: stretch; gap: 8px; }
+
 .appr {
-  background: transparent; border: 1.5px solid #2f8b4f; color: #6ee7a0;
-  font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-family: inherit;
-  display: inline-flex; align-items: center; gap: 8px;
-  transition: background .18s, border-color .18s, color .18s, box-shadow .18s;
-  animation: apprNudge 2.6s ease-in-out infinite;
+  width: 100%; justify-content: center;
+  background: #22c55e; border: none; color: #06240f;
+  font-weight: 700; font-size: 17px; padding: 14px 18px; border-radius: 11px;
+  cursor: pointer; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 10px;
+  transition: background .18s, transform .1s, box-shadow .18s;
+  box-shadow: 0 3px 0 #15803d;
 }
-.appr:hover:not(:disabled) { background: #14432a; border-color: #4ade80; color: #86efac; animation: none; }
-.appr:active:not(:disabled) { transform: translateY(1px); }
-.appr .ico { transition: transform .18s; }
+.appr:hover:not(:disabled) { background: #34d95f; }
+.appr:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #15803d; }
+/* ลูกศรขยับไปมา ชี้ว่าให้กดปุ่มนี้ */
+.appr .nudge { animation: arrowNudge 1.15s ease-in-out infinite; }
 
 .appr.on {
-  background: #22c55e; border-color: #22c55e; color: #06240f;
-  animation: none; box-shadow: 0 0 0 3px rgba(34, 197, 94, .16);
+  background: #10331d; color: #6ee7a0;
+  box-shadow: inset 0 0 0 1.5px #1f6b39; font-weight: 500;
 }
-.appr.on:hover:not(:disabled) { background: #16a34a; border-color: #16a34a; color: #04200d; }
-.appr.on .ico { animation: apprPop .32s ease-out; }
-.appr:disabled { opacity: .4; cursor: default; animation: none; }
+.appr.on:hover:not(:disabled) { background: #14432a; }
+.appr.on:active:not(:disabled) { transform: none; }
+.appr:disabled { opacity: .4; cursor: default; box-shadow: none; }
 
-@keyframes apprNudge {
-  0%, 70%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, .34); }
-  35% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
-}
-@keyframes apprPop {
-  0% { transform: scale(.5); }
-  60% { transform: scale(1.25); }
-  100% { transform: scale(1); }
+@keyframes arrowNudge {
+  0%, 100% { transform: translateX(0); opacity: .75; }
+  50% { transform: translateX(5px); opacity: 1; }
 }
 /* เครื่องที่ตั้งค่าลดการเคลื่อนไหวไว้ ไม่ต้องกะพริบ */
 @media (prefers-reduced-motion: reduce) {
-  .appr, .appr.on .ico { animation: none; }
+  .appr .nudge { animation: none; }
 }
 
 button {
@@ -544,6 +585,13 @@ pre.script { white-space: pre-wrap; font-family: inherit; margin: 0; color: #c8d
 
 @media (max-width: 1100px) {
   .dir-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 980px) {
+  .topgrid { grid-template-columns: 1fr; }
+  /* จอแคบไม่มีกล่องสรุปให้เทียบความสูง กลับไปใช้สัดส่วนภาพแทน */
+  .reel-stage { flex: none; }
+  .reel-stage video { height: auto; aspect-ratio: 16/9; }
 }
 
 @media (max-width: 820px) {
