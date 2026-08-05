@@ -327,6 +327,16 @@ video { width: 100%; border-radius: 11px; background: #000; display: block; }
 .fb { border-top: 1px solid var(--line); padding: 11px 0; }
 .fb:first-of-type { border-top: none; }
 .fb .who { color: var(--dim); margin-bottom: 3px; }
+/* คอมเมนต์ที่จัดการไปแล้ว — จางลงแต่ยังอ่านออก ไม่ต้องขีดฆ่าให้อ่านยาก */
+.fb.isdone { opacity: .62; }
+
+.fb-done { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 7px; }
+.dn {
+  background: transparent; border: 1px solid var(--line); color: var(--dim);
+  border-radius: 8px; padding: 3px 12px; font-weight: 500; cursor: pointer; font-family: inherit;
+}
+.dn:hover:not(:disabled) { border-color: #3d465e; color: var(--text); }
+.dn.on { background: #10331d; border-color: #1f6b39; color: #6ee7a0; }
 
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid var(--line); vertical-align: top; }

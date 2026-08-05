@@ -91,6 +91,19 @@ export default function MemberPage({ params }) {
     setComment(""); load();
   };
 
+  // ติ๊กว่าคอมเมนต์นี้ทำไปแล้วหรือยัง
+  const toggleDone = async (f) => {
+    setBusy(true);
+    const r = await fetch("/api/feedback", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: f.id, done: !f.done, author: getMe() }),
+    }).then((x) => x.json());
+    setBusy(false);
+    if (r.error) return setMsg({ t: "err", m: r.error });
+    load();
+  };
+
   // ปุ่มผ่าน/ยังไม่ผ่าน — กดสลับไปมาได้
   // ถ้ามีเวอร์ชันที่ผ่านอยู่แล้วให้ปุ่มคุมตัวนั้น ถ้ายังไม่มีให้คุมเวอร์ชันล่าสุด
   const approvedClip = m.clips.find((c) => c.status === "approved");
@@ -193,12 +206,23 @@ export default function MemberPage({ params }) {
 
             <div style={{ marginTop: 14 }}>
               {m.feedback.map((f) => (
-                <div className="fb" key={f.id}>
+                <div className={`fb ${f.done ? "isdone" : ""}`} key={f.id}>
                   <div className="who">
                     {f.author} · {new Date(f.created_at).toLocaleString("th-TH")}{" "}
                     {f.vote === "ok" ? "👍" : f.vote === "revise" ? "🔧" : ""}
                   </div>
                   {f.message}
+                  <div className="fb-done">
+                    <button className={`dn ${f.done ? "on" : ""}`} disabled={busy} onClick={() => toggleDone(f)}>
+                      {f.done ? "☑ ทำแล้ว" : "☐ ยังไม่ได้ทำ"}
+                    </button>
+                    {f.done && f.done_by && (
+                      <span className="dimtext">
+                        โดย {f.done_by}
+                        {f.done_at ? ` · ${new Date(f.done_at).toLocaleString("th-TH")}` : ""}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

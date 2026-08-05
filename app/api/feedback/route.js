@@ -25,6 +25,27 @@ export async function POST(req) {
   }
 }
 
+// ติ๊กว่าคอมเมนต์นี้ทำไปแล้วหรือยัง — กดสลับไปมาได้
+export async function PATCH(req) {
+  try {
+    const { id, done, author } = await req.json();
+    if (!id) return Response.json({ error: "ต้องระบุคอมเมนต์" }, { status: 400 });
+    const who = (author || "").trim().slice(0, 60);
+
+    const [row] = await sql`
+      update feedback set
+        done    = ${!!done},
+        done_by = ${done ? who || null : null},
+        done_at = ${done ? new Date().toISOString() : null}
+      where id = ${Number(id)}
+      returning *`;
+    if (!row) return Response.json({ error: "ไม่พบคอมเมนต์นี้" }, { status: 404 });
+    return Response.json({ ok: true, feedback: row });
+  } catch (e) {
+    return Response.json({ error: String(e.message || e) }, { status: 500 });
+  }
+}
+
 export async function DELETE(req) {
   try {
     const id = new URL(req.url).searchParams.get("id");

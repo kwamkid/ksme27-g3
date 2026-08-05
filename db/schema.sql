@@ -69,9 +69,12 @@ create table feedback (
   member_id  text references members(id) on delete cascade,
   clip_id    int,
   author     text not null,
-  vote       text,                   -- ok | revise
+  vote       text,                   -- ok | revise (ของเดิม ตอนนี้ใช้แค่คอมเมนต์)
   message    text,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  done       boolean default false,  -- ติ๊กว่าคอมเมนต์นี้จัดการไปแล้ว
+  done_by    text,
+  done_at    timestamptz
 );
 
 -- log ว่าใครแก้ข้อมูลอะไรไปบ้าง (ทุกคนแก้ได้ แต่ย้อนดูได้)

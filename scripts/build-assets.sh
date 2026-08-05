@@ -44,37 +44,54 @@ to_webp() {
   cwebp -quiet -q "$q" -resize "$w" 0 "$src" -o "$out" 2>/dev/null || { echo "  ✗ cwebp ล้มเหลว: $src"; return 1; }
 }
 
-# ---------- 1) ตัวละคร v2 ----------
+# ---------- 1) ตัวละคร ----------
+# mapping ไม่ต้องระบุเลขเวอร์ชัน — สคริปต์หาไฟล์ <slug>-v<เลขมากสุด>.png ให้เอง
+# regen ตัวละครใหม่แล้วตั้งชื่อ -v4 -v5 ต่อไปได้เลย ไม่ต้องมาแก้ไฟล์นี้
+# หมายเหตุ: path มีช่องว่าง ต้อง glob แบบ "$dir/$slug"-v*.png (ครอบเฉพาะส่วนที่มีช่องว่าง)
+newest_char() {
+  local dir="$1" slug="$2" best="" bestn=-1 f n
+  for f in "$dir/$slug"-v*.png; do
+    [ -e "$f" ] || continue
+    n="${f##*-v}"; n="${n%.png}"
+    case "$n" in "" | *[!0-9]*) continue ;; esac
+    if [ "$n" -gt "$bestn" ]; then bestn="$n"; best="$f"; fi
+  done
+  printf '%s' "$best"
+}
+
 echo "▸ ตัวละคร (avatar)"
-while IFS='|' read -r id file; do
+while IFS='|' read -r id slug; do
   [ -z "${id:-}" ] && continue
-  to_webp "$CHARS/v2-characters/$file" "$PUB/avatar/$id.webp" 360 80 || true
+  src="$(newest_char "$CHARS/v2-characters" "$slug")"
+  if [ -z "$src" ]; then echo "  ✗ ไม่พบตัวละครของ $id ($slug-v*.png)"; continue; fi
+  echo "  $id ← $(basename "$src")"
+  to_webp "$src" "$PUB/avatar/$id.webp" 360 80 || true
 done <<'EOF'
-build-sirayooth|1-BUILD/sirayooth-v2.png
-build-broroma|1-BUILD/broroma-v2.png
-build-nps-plus|1-BUILD/nps-v2.png
-build-leo-residence|1-BUILD/leo-v2.png
-make-pc-foil|2-MAKE/pcfoil-v2.png
-make-foilmaster|2-MAKE/foilmaster-v2.png
-make-quality-flexpack|2-MAKE/qualityflexpack-v2.png
-make-mastercrafts|2-MAKE/mastercrafts-v2.png
-move-aps-commerce|3-MOVE/aps-jay-v2.png
-move-tpi|3-MOVE/tpi-v2.png
-move-atn|3-MOVE/atn-v2.png
-move-ch-pattana|3-MOVE/chpattana-v2.png
-grow-forth-smart|4-GROW/forthsmart-v2.png
-grow-kbank-wealth|4-GROW/kbank-ann-v2.png
-grow-profess-rent|4-GROW/professrent-v2.png
-grow-tower-tactic|4-GROW/towertactic-v2.png
-live-damrong|5-LIVE/damrong-v2.png
-live-yoksod|5-LIVE/yoksod-v2.png
-live-sirichai|5-LIVE/sirichai-v2.png
-live-vejpong|5-LIVE/vejpong-v2.png
-live-aday-fresh|5-LIVE/adayfresh-golf-v2.png
-live-pchw|5-LIVE/pchw-v2.png
-thrive-winds|6-THRIVE/winds-v2.png
-thrive-rebalance|6-THRIVE/rebalance-v2.png
-thrive-joyous|6-THRIVE/joyous-v2.png
+build-sirayooth|1-BUILD/sirayooth
+build-broroma|1-BUILD/broroma
+build-nps-plus|1-BUILD/nps
+build-leo-residence|1-BUILD/leo
+make-pc-foil|2-MAKE/pcfoil
+make-foilmaster|2-MAKE/foilmaster
+make-quality-flexpack|2-MAKE/qualityflexpack
+make-mastercrafts|2-MAKE/mastercrafts
+move-aps-commerce|3-MOVE/aps-jay
+move-tpi|3-MOVE/tpi
+move-atn|3-MOVE/atn
+move-ch-pattana|3-MOVE/chpattana
+grow-forth-smart|4-GROW/forthsmart
+grow-kbank-wealth|4-GROW/kbank-ann
+grow-profess-rent|4-GROW/professrent
+grow-tower-tactic|4-GROW/towertactic
+live-damrong|5-LIVE/damrong
+live-yoksod|5-LIVE/yoksod
+live-sirichai|5-LIVE/sirichai
+live-vejpong|5-LIVE/vejpong
+live-aday-fresh|5-LIVE/adayfresh-golf
+live-pchw|5-LIVE/pchw
+thrive-winds|6-THRIVE/winds
+thrive-rebalance|6-THRIVE/rebalance
+thrive-joyous|6-THRIVE/joyous
 EOF
 
 # ---------- 2) รูปประจำกลุ่ม (ฮีโร่ประจำทีม) ----------
@@ -122,7 +139,7 @@ live-aday-fresh|5-LIVE/5.5-aDay-Fresh|face_tunvarat aday.png|logo_Logo-01.png
 live-pchw|5-LIVE/5.6-ปตท.ปากช่องไฮเวย์|face_IMG_5452.PNG|logo_ปากช่องไฮเวย์.png
 thrive-winds|6-THRIVE/6.1-Winds-Hospital|face_20251210 Profile43115.jpg|logo_LOGO WIND Hospital (1).png
 thrive-rebalance|6-THRIVE/6.2-Rebalance|face_Profile.jpg|logo_Logo_Rebalance.jpg
-thrive-joyous|6-THRIVE/6.3-Joyous|face_JOYOUS รูปหน้าตรง.png|logo_Logo JOYOUS.png
+thrive-joyous|6-THRIVE/6.3-Joyous|face 1_JOYOUS รูปหน้าตรง.png|logo_Logo JOYOUS.png
 thrive-leviya|6-THRIVE/6.4-LEVIYA|-|-
 EOF
 

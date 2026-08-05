@@ -56,6 +56,18 @@ export default function Lightbox({ member, onClose, onChanged }) {
     onChanged?.();
   };
 
+  const toggleDone = async (f) => {
+    setBusy(true); setErr("");
+    const r = await fetch("/api/feedback", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: f.id, done: !f.done, author: getMe() }),
+    }).then((x) => x.json()).catch((e) => ({ error: String(e) }));
+    setBusy(false);
+    if (r.error) return setErr(r.error);
+    onChanged?.();
+  };
+
   const removeFeedback = async (id) => {
     setBusy(true); setErr("");
     const r = await fetch(`/api/feedback?id=${id}`, { method: "DELETE" })
@@ -159,7 +171,7 @@ export default function Lightbox({ member, onClose, onChanged }) {
           <div className="lb-sub">ประวัติ ({history.length})</div>
           {history.length === 0 && <div className="dimtext">ยังไม่มีใครคอมเมนต์</div>}
           {history.map((f) => (
-            <div className="fb" key={f.id}>
+            <div className={`fb ${f.done ? "isdone" : ""}`} key={f.id}>
               <div className="who">
                 {f.author}
                 {f.clip_id && verOf[f.clip_id] ? ` · v${verOf[f.clip_id]}` : ""} ·{" "}
@@ -172,6 +184,17 @@ export default function Lightbox({ member, onClose, onChanged }) {
                 )}
               </div>
               {f.message}
+              <div className="fb-done">
+                <button className={`dn ${f.done ? "on" : ""}`} disabled={busy} onClick={() => toggleDone(f)}>
+                  {f.done ? "☑ ทำแล้ว" : "☐ ยังไม่ได้ทำ"}
+                </button>
+                {f.done && f.done_by && (
+                  <span className="dimtext">
+                    โดย {f.done_by}
+                    {f.done_at ? ` · ${new Date(f.done_at).toLocaleString("th-TH")}` : ""}
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>
