@@ -30,8 +30,8 @@ const P = {
   // ลำโพง: เปิดเสียงมีคลื่นเสียง ปิดเสียงมีกากบาท
   volume: <><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" /><path d="M15.5 9.2a4 4 0 010 5.6" /><path d="M18 6.6a7.5 7.5 0 010 10.8" /></>,
   volumeOff: <><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" /><path d="M16.5 10l4 4" /><path d="M20.5 10l-4 4" /></>,
-  prev: <><path d="M14.5 5.5L7.5 12l7 6.5" /><path d="M18.5 5.5v13" /></>,
-  next: <><path d="M9.5 5.5l7 6.5-7 6.5" /><path d="M5.5 5.5v13" /></>,
+  prev: <path d="M15 5l-7 7 7 7" />,
+  next: <path d="M9 5l7 7-7 7" />,
   arrowRight: <><path d="M4 12h15" /><path d="M13 6l6 6-6 6" /></>,
   circle: <circle cx="12" cy="12" r="8.5" />,
   circleCheck: <><circle cx="12" cy="12" r="8.5" /><path d="M8.3 12.2l2.6 2.6 4.8-5.4" /></>,
