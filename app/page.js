@@ -4,6 +4,7 @@ import { avatarSrc, ownerSrc, logoSrc } from "@/lib/assets";
 import Lightbox from "./lightbox";
 import Icon from "./icons";
 import ImgBox from "./imgbox";
+import HeroReel from "./heroreel";
 import { WORK, workStatus, openComments } from "@/lib/status";
 
 // 2 = มีแล้ว · 1 = มีไฟล์แต่ยังใช้บนเว็บไม่ได้ (เช่น .ai) · 0 = ยังไม่มี
@@ -189,22 +190,7 @@ export default function Directory() {
         <div className="stat"><b>{withChar}/{total}</b><span>มีตัวละครแล้ว</span></div>
       </div>
 
-      {/* มือถือไม่มีที่พอสำหรับ stat card เลยโชว์คลิปที่ฟันธงแล้วให้เลื่อนดูแทน */}
-      {doneList.length > 0 && (
-        <div className="done-strip">
-          <div className="done-head">
-            <Icon name="check" /> ฟันธงแล้ว <b>{doneList.length}</b> คน — เลื่อนดูได้
-          </div>
-          <div className="done-row">
-            {doneList.map((m) => (
-              <button key={m.id} className="done-item" onClick={() => setLbId(m.id)} title={m.company_th}>
-                {m.char ? <img src={m.char} alt="" loading="lazy" /> : <i className="ph" />}
-                <span>{m.nickname || m.company_th}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <HeroReel members={doneList} />
 
       {/* ───── แถบค้นหา + ตัวกรอง ───── */}
       <section>

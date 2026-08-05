@@ -82,27 +82,31 @@ header.top nav a:hover { color: var(--text); }
 }
 .clearfilter:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ───────── แถบคลิปที่ฟันธงแล้ว (โชว์เฉพาะจอมือถือ แทน stat card) ───────── */
-.done-strip { display: none; margin: 4px 0 22px; }
-.done-head { color: var(--dim); display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
-.done-head b { color: #6ee7a0; }
-.done-row {
-  display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;
-  scroll-snap-type: x mandatory; scrollbar-width: none;
+/* ───────── แถบโชว์ผลงาน — เล่นคลิปคนที่ฟันธงแล้ววนไปเรื่อยๆ ───────── */
+.reel { margin: 6px 0 26px; }
+.reel-head {
+  color: var(--dim); display: flex; align-items: center; gap: 8px;
+  margin-bottom: 11px; flex-wrap: wrap;
 }
-.done-row::-webkit-scrollbar { display: none; }
-.done-item {
-  flex: none; width: 92px; scroll-snap-align: start; cursor: pointer;
-  background: var(--card); border: 1px solid #1f6b39; border-radius: 12px;
-  padding: 7px; color: var(--text); font-family: inherit; text-align: center;
+.reel-head b { color: #6ee7a0; }
+.reel-head small { color: #6b7488; }
+
+.reel-body { max-width: 560px; }
+
+.reel-stage { position: relative; }
+.reel-stage video {
+  width: 100%; aspect-ratio: 16/9; object-fit: cover;
+  border-radius: 14px; background: #000; display: block;
+  border: 1px solid var(--line);
 }
-.done-item img, .done-item .ph {
-  width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: 50% 6%;
-  border-radius: 8px; background: #0d0f15; display: block; margin-bottom: 6px;
+.reel-mute {
+  position: absolute; right: 9px; bottom: 9px;
+  background: rgba(10,12,18,.82); border: 1px solid var(--line); color: var(--text);
+  border-radius: 9px; padding: 7px; cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; line-height: 1;
 }
-.done-item span {
-  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+.reel-mute:hover { border-color: #3d465e; background: rgba(10,12,18,.95); }
+
 .dot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
 .dot.sm { width: 10px; height: 10px; border-radius: 3px; }
 
@@ -552,9 +556,8 @@ pre.script { white-space: pre-wrap; font-family: inherit; margin: 0; color: #c8d
   header.top h1 { font-size: 19px; }
   .me { margin-left: 0; width: 100%; }
   .me input { flex: 1; width: auto; }
-  /* จอมือถือ stat card 5 ใบกินพื้นที่เกือบเต็มจอ เอาออกแล้วโชว์คลิปที่ฟันธงแล้วแทน */
+  /* จอมือถือ stat card 5 ใบกินพื้นที่เกือบเต็มจอ เอาออก เหลือแถบโชว์ผลงานพอ */
   .stats { display: none; }
-  .done-strip { display: block; }
   .clearfilter { margin-left: 0; }
   /* จอมือถือ 2 คอลัมน์ — บีบระยะให้เนื้อหายังอ่านออก */
   .dir-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }

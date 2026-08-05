@@ -27,6 +27,9 @@ const P = {
   scene: <><rect x="2.5" y="8" width="19" height="12.5" rx="2" /><path d="M2.5 8l3-4.5 4 3.2 3-3.2 4 3.2 3-3.2" /></>,
   user: <><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20a7.5 7.5 0 0115 0" /></>,
   image: <><rect x="3" y="4.5" width="18" height="15" rx="2" /><circle cx="8.5" cy="10" r="1.6" /><path d="M4 17l5-4.5 4.5 4 2.5-2 4 3.5" /></>,
+  // ลำโพง: เปิดเสียงมีคลื่นเสียง ปิดเสียงมีกากบาท
+  volume: <><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" /><path d="M15.5 9.2a4 4 0 010 5.6" /><path d="M18 6.6a7.5 7.5 0 010 10.8" /></>,
+  volumeOff: <><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" /><path d="M16.5 10l4 4" /><path d="M20.5 10l-4 4" /></>,
   circle: <circle cx="12" cy="12" r="8.5" />,
   circleCheck: <><circle cx="12" cy="12" r="8.5" /><path d="M8.3 12.2l2.6 2.6 4.8-5.4" /></>,
   box: <rect x="4" y="4" width="16" height="16" rx="3" />,
