@@ -36,6 +36,7 @@ const MATCH = {
   noclip: (m) => m.work.key === "noclip",
   approved: (m) => m.work.key === "approved",
   nochar: (m) => !m.char,
+  hasclip: (m) => m.clips.length > 0,
 };
 
 export default function Directory() {
@@ -199,8 +200,8 @@ export default function Directory() {
           <button className={`stat ${filter === "review" ? "on" : ""}`} onClick={() => setFilter("review")}>
             <b>{nOf("review")}</b><span>รอเจ้าของรีวิว</span>
           </button>
-          <button className={`stat ${filter === "noclip" ? "on" : ""}`} onClick={() => setFilter("noclip")}>
-            <b>{nOf("noclip")}</b><span>ยังไม่มีคลิป</span>
+          <button className={`stat ${filter === "hasclip" ? "on" : ""}`} onClick={() => setFilter("hasclip")}>
+            <b>{withClip}/{total}</b><span>มีคลิปแล้ว</span>
           </button>
           <button className={`stat ${filter === "nochar" ? "on" : ""}`} onClick={() => setFilter("nochar")}>
             <b>{withChar}/{total}</b><span>มีตัวละครแล้ว</span>
