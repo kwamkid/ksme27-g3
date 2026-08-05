@@ -60,63 +60,68 @@ to_webp() {
 }
 
 # ---------- 1) ตัวละคร ----------
-# mapping ไม่ต้องระบุเลขเวอร์ชัน — สคริปต์หาไฟล์ <slug>-v<เลขมากสุด>.png ให้เอง
-# regen ตัวละครใหม่แล้วตั้งชื่อ -v4 -v5 ต่อไปได้เลย ไม่ต้องมาแก้ไฟล์นี้
-# หมายเหตุ: path มีช่องว่าง ต้อง glob แบบ "$dir/$slug"-v*.png (ครอบเฉพาะส่วนที่มีช่องว่าง)
-newest_char() {
-  local dir="$1" slug="$2" best="" bestn=-1 f n
-  for f in "$dir/$slug"-v*.png; do
-    [ -e "$f" ] || continue
-    n="${f##*-v}"; n="${n%.png}"
-    case "$n" in "" | *[!0-9]*) continue ;; esac
-    if [ "$n" -gt "$bestn" ]; then bestn="$n"; best="$f"; fi
-  done
-  printf '%s' "$best"
+# ไฟล์อยู่ที่ 5.1 Characters/characters/<ทีม>/<ชื่อเล่น>-<บริษัท>.png
+# ชื่อไฟล์เป็นภาษาไทย ซึ่ง macOS เก็บแบบ NFD แต่ที่พิมพ์ในไฟล์นี้เป็น NFC
+# เทียบตรงๆ ด้วย bash จะไม่ตรง เลยให้ python เทียบแบบ normalize ให้
+find_file() {
+  python3 - "$1" "$2" 2>/dev/null <<'PY'
+import sys, os, unicodedata
+d, want = sys.argv[1], sys.argv[2]
+norm = lambda s: unicodedata.normalize("NFC", s)
+try:
+    for f in os.listdir(d):
+        if norm(f) == norm(want):
+            print(os.path.join(d, f))
+            break
+except OSError:
+    pass
+PY
 }
 
 echo "▸ ตัวละคร (avatar)"
-while IFS='|' read -r id slug; do
+while IFS='|' read -r id rel; do
   [ -z "${id:-}" ] && continue
-  src="$(newest_char "$CHARS/v2-characters" "$slug")"
-  if [ -z "$src" ]; then echo "  ✗ ไม่พบตัวละครของ $id ($slug-v*.png)"; continue; fi
-  echo "  $id ← $(basename "$src")"
-  to_webp "$src" "$PUB/avatar/$id.webp" 360 80 || true
+  team="${rel%%/*}"; name="${rel#*/}"
+  src="$(find_file "$CHARS/characters/$team" "$name")"
+  if [ -z "$src" ]; then echo "  ✗ ไม่พบตัวละครของ $id ($rel)"; continue; fi
+  echo "  $id ← $name"
+  to_webp "$src" "$PUB/avatar/$id.webp" 560 80 || true
 done <<'EOF'
-build-sirayooth|1-BUILD/sirayooth
-build-broroma|1-BUILD/broroma
-build-nps-plus|1-BUILD/nps
-build-leo-residence|1-BUILD/leo
-make-pc-foil|2-MAKE/pcfoil
-make-foilmaster|2-MAKE/foilmaster
-make-quality-flexpack|2-MAKE/qualityflexpack
-make-mastercrafts|2-MAKE/mastercrafts
-move-aps-commerce|3-MOVE/aps-jay
-move-tpi|3-MOVE/tpi
-move-atn|3-MOVE/atn
-move-ch-pattana|3-MOVE/chpattana
-grow-forth-smart|4-GROW/forthsmart
-grow-kbank-wealth|4-GROW/kbank-ann
-grow-profess-rent|4-GROW/professrent
-grow-tower-tactic|4-GROW/towertactic
-live-damrong|5-LIVE/damrong
-live-yoksod|5-LIVE/yoksod
-live-sirichai|5-LIVE/sirichai
-live-vejpong|5-LIVE/vejpong
-live-aday-fresh|5-LIVE/adayfresh-golf
-live-pchw|5-LIVE/pchw
-thrive-winds|6-THRIVE/winds
-thrive-rebalance|6-THRIVE/rebalance
-thrive-joyous|6-THRIVE/joyous
+build-sirayooth|1-BUILD/มด-ศิรายุทธ.png
+build-sp-engineering|1-BUILD/ศักดิ์สิทธิ์-SPEngineering.png
+build-broroma|1-BUILD/มินนี่-Broroma.png
+build-nps-plus|1-BUILD/บีม-NPSPlus.png
+build-absolute65|1-BUILD/ปอ-Absolute65.png
+build-leo-residence|1-BUILD/ย้ง-LEOResidence.png
+make-pc-foil|2-MAKE/วิว-PCFoil.png
+make-foilmaster|2-MAKE/เกรซ-Foilmaster.png
+make-quality-flexpack|2-MAKE/ทอม-QualityFlexpack.png
+make-mastercrafts|2-MAKE/เชอร์รี่-Mastercrafts.png
+move-aps-commerce|3-MOVE/เจ-APSCommerce.png
+move-tpi|3-MOVE/ตาต้า-TPI.png
+move-atn|3-MOVE/วา-ATN.png
+move-jaturong|3-MOVE/ใบชา-จตุรงค์.png
+move-ch-pattana|3-MOVE/กริ๊ง-ช.พัฒนา.png
+grow-forth-smart|4-GROW/แวว-ForthSmart.png
+grow-kbank-sme|4-GROW/ศศิ-KBankSME.png
+grow-kbank-wealth|4-GROW/แอน-KBankWealth.png
+grow-profess-rent|4-GROW/จอย-ProfessRent.png
+grow-tower-tactic|4-GROW/แบงค์-TowerTactic.png
+live-damrong|5-LIVE/เบียร์-กุ้งดำรงค์.png
+live-yoksod|5-LIVE/จ๊าก-หยกสด.png
+live-sirichai|5-LIVE/เจิน-ตราศิริชัย.png
+live-vejpong|5-LIVE/เบญ-เวชพงศ์.png
+live-aday-fresh|5-LIVE/กอล์ฟ-aDayFresh.png
+live-pchw|5-LIVE/ธีร์-ปากช่องไฮเวย์.png
+thrive-winds|6-THRIVE/หมอบาส-WindsHospital.png
+thrive-rebalance|6-THRIVE/ปูเป้-Rebalance.png
+thrive-joyous|6-THRIVE/อู๋-Joyous.png
+thrive-leviya|6-THRIVE/โน้ต-LEVIYA.png
 EOF
 
-# ---------- 2) รูปประจำกลุ่ม (ฮีโร่ประจำทีม) ----------
-# ชุด uniform ราย ชาย/หญิง (_costume-refs) ไม่เอาขึ้นเว็บแล้ว — ต้นฉบับยังอยู่ที่
-# 2-Production/5.1 Characters (ตัวละคร+ชุด)/_costume-refs/ ถ้าอยากใช้อีกค่อยเปิดกลับ
-echo "▸ รูปประจำกลุ่ม"
-for T in BUILD MAKE MOVE GROW LIVE THRIVE; do
-  to_webp "$CHARS/v2-characters/0-main/hero-$T.png" "$PUB/hero/$T.webp" 560 82 || true
-done
-to_webp "$CHARS/v2-characters/0-main/owner-protagonist.png" "$PUB/hero/owner.webp" 560 82 || true
+# ---------- 2) (เลิกใช้) ฮีโร่ประจำทีม + ชุด uniform ----------
+# เคยเอาไว้เป็นรูปจางๆ แทนคนที่ยังไม่มีตัวละคร แต่ตอนนี้ครบ 30 คนแล้วเลยไม่ได้ใช้
+# ต้นฉบับอยู่ที่ _to_delete/v2-characters/0-main/ กับ 5.1 Characters/_costume-refs/
 
 # ---------- 3) รูปเจ้าของตัวจริง + โลโก้ ----------
 # หาไฟล์เองจากชื่อที่ขึ้นต้นด้วย face_ / FACE_ / "face 1_" / logo_ / "LOGO " ฯลฯ
@@ -139,7 +144,7 @@ while IFS='|' read -r id dir; do
   if [ -n "$face" ]; then
     r="$(exif_rot "$face")"
     echo "  $id ← $(basename "$face")${r:+$([ "$r" != 0 ] && echo "  (หมุน $r°)")}"
-    to_webp "$face" "$PUB/owner/$id.webp" 480 82 || true
+    to_webp "$face" "$PUB/owner/$id.webp" 640 82 || true
   else
     echo "  ✗ $id ยังไม่มีรูปเจ้าของ"
   fi

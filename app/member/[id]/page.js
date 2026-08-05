@@ -3,6 +3,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { getMe } from "../../me";
 import { avatarSrc, ownerSrc, logoSrc } from "@/lib/assets";
 import Icon from "../../icons";
+import ImgBox from "../../imgbox";
 import { workStatus, openComments } from "@/lib/status";
 
 // ช่องข้อความที่สูงพอดีเนื้อหา ไม่เหลือที่ว่างเปล่า และไม่ต้องเลื่อนอ่าน
@@ -51,6 +52,7 @@ export default function MemberPage({ params }) {
   const [saving, setSaving] = useState(false);
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
+  const [img, setImg] = useState(null);
 
   const load = () =>
     fetch("/api/data")
@@ -139,11 +141,23 @@ export default function MemberPage({ params }) {
       <div className="mhead">
         <div className="mhead-pics">
           {avatarSrc(m.id) ? (
-            <img className="mhead-char" src={avatarSrc(m.id)} alt={`ตัวละคร ${m.company_th}`} />
+            <img
+              className="mhead-char zoom"
+              src={avatarSrc(m.id)}
+              alt={`ตัวละคร ${m.company_th}`}
+              onClick={() => setImg({ src: avatarSrc(m.id), alt: `ตัวละคร ${m.company_th}` })}
+            />
           ) : (
             <span className="mhead-char none">ยังไม่มีตัวละคร</span>
           )}
-          {ownerSrc(m.id) && <img className="mhead-face" src={ownerSrc(m.id)} alt={`เจ้าของ ${m.company_th}`} />}
+          {ownerSrc(m.id) && (
+            <img
+              className="mhead-face zoom"
+              src={ownerSrc(m.id)}
+              alt={`${m.owner_name} · ${m.company_th}`}
+              onClick={() => setImg({ src: ownerSrc(m.id), alt: `${m.owner_name} · ${m.company_th}` })}
+            />
+          )}
         </div>
         <div className="mhead-txt">
           <h2>{m.company_th}</h2>
@@ -164,6 +178,8 @@ export default function MemberPage({ params }) {
           </span>
         )}
       </div>
+
+      <ImgBox img={img} onClose={() => setImg(null)} />
 
       {msg && <div className={`msg ${msg.t}`}>{msg.m}</div>}
 

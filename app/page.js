@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { avatarSrc, ownerSrc, logoSrc, heroSrc } from "@/lib/assets";
+import { avatarSrc, ownerSrc, logoSrc } from "@/lib/assets";
 import Lightbox from "./lightbox";
 import Icon from "./icons";
+import ImgBox from "./imgbox";
 import { WORK, workStatus, openComments } from "@/lib/status";
 
 // 2 = มีแล้ว · 1 = มีไฟล์แต่ยังใช้บนเว็บไม่ได้ (เช่น .ai) · 0 = ยังไม่มี
@@ -45,6 +46,7 @@ export default function Directory() {
   const [q, setQ] = useState("");
   const [lbId, setLbId] = useState(null);
   const [ready, setReady] = useState(false);
+  const [img, setImg] = useState(null);
 
   const load = () =>
     fetch("/api/data")
@@ -193,6 +195,7 @@ export default function Directory() {
         </div>
 
         <div className="toolbar">
+          <div className="findbar">
           <div className="searchbox">
             <input
               className="search"
@@ -207,9 +210,14 @@ export default function Directory() {
               </button>
             )}
           </div>
-          <div className="views">
-            <button className={`chip ${view === "cards" ? "on" : ""}`} onClick={() => setView("cards")}><Icon name="grid" /> การ์ด</button>
-            <button className={`chip ${view === "table" ? "on" : ""}`} onClick={() => setView("table")}><Icon name="list" /> ตารางเช็กของ</button>
+          <div className="seg">
+            <button className={view === "cards" ? "on" : ""} onClick={() => setView("cards")}>
+              <Icon name="grid" /> การ์ด
+            </button>
+            <button className={view === "table" ? "on" : ""} onClick={() => setView("table")}>
+              <Icon name="list" /> ตารางเช็กของ
+            </button>
+          </div>
           </div>
         </div>
 
@@ -254,12 +262,15 @@ export default function Directory() {
                 <article key={m.id} className="dir" style={{ "--tc": t.color || "#64748b" }}>
                   <div className="dir-cover">
                     {m.char ? (
-                      <img className="dir-char" src={m.char} alt={`ตัวละคร ${m.company_th}`} loading="lazy" />
+                      <img
+                        className="dir-char zoom"
+                        src={m.char}
+                        alt={`ตัวละคร ${m.company_th}`}
+                        loading="lazy"
+                        onClick={() => setImg({ src: m.char, alt: `ตัวละคร ${m.company_th}` })}
+                      />
                     ) : (
-                      <>
-                        <img className="dir-char ghost" src={heroSrc(m.team)} alt="" loading="lazy" />
-                        <span className="dir-nochar">ยังไม่มีตัวละคร</span>
-                      </>
+                      <span className="dir-nochar">ยังไม่มีตัวละคร</span>
                     )}
                     <span className="dir-team">{m.team}</span>
                     {m.logo && (
@@ -269,7 +280,13 @@ export default function Directory() {
                     )}
                     <span className="dir-face">
                       {m.owner ? (
-                        <img src={m.owner} alt={`เจ้าของ ${m.company_th}`} loading="lazy" />
+                        <img
+                          className="zoom"
+                          src={m.owner}
+                          alt={`${m.owner_name} · ${m.company_th}`}
+                          loading="lazy"
+                          onClick={() => setImg({ src: m.owner, alt: `${m.owner_name} · ${m.company_th}` })}
+                        />
                       ) : (
                         <i>?</i>
                       )}
@@ -293,11 +310,6 @@ export default function Directory() {
                         <span className="pill miss"><Icon name="comment" /> {m.openComments}</span>
                       ) : (
                         m.feedback.length > 0 && <span className="pill"><Icon name="comment" /> {m.feedback.length}</span>
-                      )}
-                      {m.missing.length > 0 && (
-                        <span className="pill miss" title={`ยังไม่ได้ส่ง: ${m.missing.join(" · ")}`}>
-                          <Icon name="image" /> ขาด {m.missing.length}
-                        </span>
                       )}
                     </div>
                   </div>
@@ -377,6 +389,7 @@ export default function Directory() {
       </section>
 
       <Lightbox member={lbMember} onClose={() => setLbId(null)} onChanged={load} />
+      <ImgBox img={img} onClose={() => setImg(null)} />
     </div>
   );
 }
