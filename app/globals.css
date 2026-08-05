@@ -75,6 +75,34 @@ header.top nav a:hover { color: var(--text); }
 }
 .team-head h2 { font-size: 20px; margin: 0; }
 .team-head small { color: var(--dim); font-weight: normal; }
+.clearfilter {
+  background: transparent; border: 1px solid var(--line); color: var(--dim);
+  border-radius: 99px; padding: 4px 13px; cursor: pointer; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px; margin-left: auto;
+}
+.clearfilter:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ───────── แถบคลิปที่ฟันธงแล้ว (โชว์เฉพาะจอมือถือ แทน stat card) ───────── */
+.done-strip { display: none; margin: 4px 0 22px; }
+.done-head { color: var(--dim); display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
+.done-head b { color: #6ee7a0; }
+.done-row {
+  display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+}
+.done-row::-webkit-scrollbar { display: none; }
+.done-item {
+  flex: none; width: 92px; scroll-snap-align: start; cursor: pointer;
+  background: var(--card); border: 1px solid #1f6b39; border-radius: 12px;
+  padding: 7px; color: var(--text); font-family: inherit; text-align: center;
+}
+.done-item img, .done-item .ph {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: 50% 6%;
+  border-radius: 8px; background: #0d0f15; display: block; margin-bottom: 6px;
+}
+.done-item span {
+  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .dot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
 .dot.sm { width: 10px; height: 10px; border-radius: 3px; }
 
@@ -524,8 +552,10 @@ pre.script { white-space: pre-wrap; font-family: inherit; margin: 0; color: #c8d
   header.top h1 { font-size: 19px; }
   .me { margin-left: 0; width: 100%; }
   .me input { flex: 1; width: auto; }
-  .stats { grid-template-columns: repeat(2, 1fr); }
-  .stat b { font-size: 24px; }
+  /* จอมือถือ stat card 5 ใบกินพื้นที่เกือบเต็มจอ เอาออกแล้วโชว์คลิปที่ฟันธงแล้วแทน */
+  .stats { display: none; }
+  .done-strip { display: block; }
+  .clearfilter { margin-left: 0; }
   /* จอมือถือ 2 คอลัมน์ — บีบระยะให้เนื้อหายังอ่านออก */
   .dir-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .dir-body { padding: 11px 11px 9px; }

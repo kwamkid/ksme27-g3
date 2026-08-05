@@ -167,6 +167,9 @@ export default function Directory() {
   const nOf = (key) => rows.filter((m) => m.work.key === key).length;
 
   const lbMember = rows.find((m) => m.id === lbId) || null;
+  const doneList = rows.filter((m) => m.approved);
+  const filtering = Boolean(team) || filter !== "all" || Boolean(q.trim());
+  const clearFilters = () => { setTeam(null); setFilter("all"); setQ(""); };
 
   const countOf = (key) =>
     rows.filter((m) => (team ? m.team === team : true) && (MATCH[key] || MATCH.all)(m)).length;
@@ -186,12 +189,38 @@ export default function Directory() {
         <div className="stat"><b>{withChar}/{total}</b><span>มีตัวละครแล้ว</span></div>
       </div>
 
+      {/* มือถือไม่มีที่พอสำหรับ stat card เลยโชว์คลิปที่ฟันธงแล้วให้เลื่อนดูแทน */}
+      {doneList.length > 0 && (
+        <div className="done-strip">
+          <div className="done-head">
+            <Icon name="check" /> ฟันธงแล้ว <b>{doneList.length}</b> คน — เลื่อนดูได้
+          </div>
+          <div className="done-row">
+            {doneList.map((m) => (
+              <button key={m.id} className="done-item" onClick={() => setLbId(m.id)} title={m.company_th}>
+                {m.char ? <img src={m.char} alt="" loading="lazy" /> : <i className="ph" />}
+                <span>{m.nickname || m.company_th}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ───── แถบค้นหา + ตัวกรอง ───── */}
       <section>
         <div className="team-head">
           <span className="dot" style={{ background: "#60a5fa" }} />
-          <h2>ทำเนียบ 30 กิจการ</h2>
-          <small>แสดง {shown.length} จาก {total} กิจการ</small>
+          <h2>ทำเนียบ {total} กิจการ</h2>
+          {filtering ? (
+            <>
+              <small>กรองอยู่ — เจอ {shown.length} กิจการ</small>
+              <button className="clearfilter" onClick={clearFilters}>
+                <Icon name="x" /> ล้างตัวกรอง
+              </button>
+            </>
+          ) : (
+            <small>แสดงทั้งหมด ไม่ได้กรองอะไรไว้</small>
+          )}
         </div>
 
         <div className="toolbar">
