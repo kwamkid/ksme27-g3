@@ -2,6 +2,7 @@
 import { use, useEffect, useRef, useState } from "react";
 import { getMe } from "../../me";
 import { avatarSrc, ownerSrc, logoSrc } from "@/lib/assets";
+import Icon from "../../icons";
 
 // ช่องข้อความที่สูงพอดีเนื้อหา ไม่เหลือที่ว่างเปล่า และไม่ต้องเลื่อนอ่าน
 function AutoTextarea({ value, onChange, placeholder }) {
@@ -35,9 +36,9 @@ const FIELDS = [
   ["business", "ทำธุรกิจอะไร", true, false],
   ["benefit", "ลูกค้าได้อะไร", true, false],
   ["products", "สินค้า/บริการหลัก", true, false],
-  ["dialogue_th", "🗣 บทพูดไทยในคลิป", true, false],
-  ["highlight", "⭐ จุดเด่น (สำคัญที่สุด — ใช้เขียนบทคลิป)", true, true],
-  ["scene_idea", "🎬 ฉากในคลิป (signature move)", true, true],
+  ["dialogue_th", "บทพูดไทยในคลิป", true, false],
+  ["highlight", "จุดเด่น (สำคัญที่สุด — ใช้เขียนบทคลิป)", true, true],
+  ["scene_idea", "ฉากในคลิป (signature move)", true, true],
   ["note", "หมายเหตุ", true, true],
 ];
 
@@ -188,7 +189,9 @@ export default function MemberPage({ params }) {
             {m.clips.map((c) => (
               <div key={c.id} style={{ marginBottom: 14 }}>
                 <div className="dimtext" style={{ marginBottom: 5 }}>
-                  v{c.version} · {c.status === "approved" ? "✅ ผ่านแล้ว" : c.status === "rejected" ? "❌ ต้องแก้" : "🎬 รอรีวิว"}
+                  v{c.version} ·{" "}
+                  <Icon name={c.status === "approved" ? "check" : c.status === "rejected" ? "x" : "clip"} />{" "}
+                  {c.status === "approved" ? "ผ่านแล้ว" : c.status === "rejected" ? "ต้องแก้" : "รอรีวิว"}
                 </div>
                 <video src={c.video_url} controls preload="metadata" />
               </div>
@@ -213,12 +216,12 @@ export default function MemberPage({ params }) {
                 <div className={`fb ${f.done ? "isdone" : ""}`} key={f.id}>
                   <div className="who">
                     {f.author} · {new Date(f.created_at).toLocaleString("th-TH")}{" "}
-                    {f.vote === "ok" ? "👍" : f.vote === "revise" ? "🔧" : ""}
+                    
                   </div>
                   {f.message}
                   <div className="fb-done">
                     <button className={`dn ${f.done ? "on" : ""}`} disabled={busy} onClick={() => toggleDone(f)}>
-                      {f.done ? "☑ ทำแล้ว" : "☐ ยังไม่ได้ทำ"}
+                      <><Icon name={f.done ? "boxChecked" : "box"} /> {f.done ? "ทำแล้ว" : "ยังไม่ได้ทำ"}</>
                     </button>
                     {f.done && f.done_by && (
                       <span className="dimtext">
@@ -241,7 +244,7 @@ export default function MemberPage({ params }) {
                 {!targetClip
                   ? "ยังไม่มีคลิปให้เลือก"
                   : approvedClip
-                  ? `✅ เอาอันนี้ (v${approvedClip.version})`
+                  ? <><Icon name="check" /> เอาอันนี้ (v{approvedClip.version})</>
                   : `เอาอันนี้ (v${targetClip.version})`}
               </button>
               <span className="dimtext">

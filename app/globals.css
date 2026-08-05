@@ -31,6 +31,10 @@ body, input, textarea, select, button, small, em, i, b, th, td, label, figcaptio
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; }
 
+/* ไอคอน 2D flat — วางกลางบรรทัดพอดีกับข้อความที่อยู่ข้างๆ */
+.ico { flex: none; vertical-align: -0.16em; }
+.pill .ico, .chip .ico, .dn .ico, .appr .ico, .play .ico { margin-right: 1px; }
+
 .wrap { max-width: 1220px; margin: 0 auto; padding: 22px 18px 80px; }
 
 /* ───────── หัวเว็บ ───────── */
@@ -76,12 +80,35 @@ header.top nav a:hover { color: var(--text); }
 
 /* ───────── แถบค้นหา + ตัวกรอง ───────── */
 .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.searchbox { flex: 1 1 300px; position: relative; display: flex; }
 .search {
-  flex: 1 1 300px; background: #0d0f15; border: 1px solid var(--line); color: var(--text);
-  border-radius: 10px; padding: 11px 14px; font-family: inherit;
+  width: 100%; background: #0d0f15; border: 1px solid var(--line); color: var(--text);
+  border-radius: 10px; padding: 11px 42px 11px 14px; font-family: inherit;
 }
 .search:focus { outline: none; border-color: #4b5570; }
+/* ปุ่มล้างคำค้นหา — โผล่เมื่อพิมพ์แล้วเท่านั้น (กด Esc ก็ล้างได้) */
+.search-x {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  background: transparent; border: none; color: var(--dim);
+  padding: 6px 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center;
+}
+.search-x:hover { color: var(--text); background: var(--card2); }
 .views { display: flex; gap: 8px; }
+
+/* แถบทีม = แท็บ (เส้นใต้) แยกให้ต่างจาก badge สถานะด้านล่างชัดๆ */
+.tabs {
+  display: flex; gap: 2px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0;
+  color: var(--dim); font-weight: 500; padding: 9px 15px; cursor: pointer; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; margin-bottom: -1px;
+}
+.tab:hover { color: var(--text); }
+.tab.on { color: var(--text); border-bottom-color: var(--tc, var(--accent)); font-weight: 700; }
+.tab em { font-style: normal; opacity: .55; }
 
 .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .chip {
@@ -269,7 +296,10 @@ header.top nav a:hover { color: var(--text); }
 .lb-empty { color: var(--dim); padding: 30px 0; text-align: center; }
 
 /* ───────── ส่วนที่หน้าอื่นใช้ร่วม ───────── */
-.pill { padding: 3px 11px; border-radius: 99px; border: 1px solid var(--line); color: var(--dim); line-height: 1.5; }
+.pill {
+  padding: 3px 11px; border-radius: 99px; border: 1px solid var(--line); color: var(--dim);
+  line-height: 1.5; display: inline-flex; align-items: center; gap: 5px;
+}
 .pill.ok { background: #10331d; border-color: #1f6b39; color: #6ee7a0; }
 .pill.draft { background: #33290f; border-color: #7a5f18; color: #ffcc4d; }
 .pill.todo { background: #2a1414; border-color: #6b2020; color: #ff9c9c; }
@@ -425,7 +455,7 @@ pre.script { white-space: pre-wrap; font-family: inherit; margin: 0; color: #c8d
   .dir-team { top: 8px; left: 8px; padding: 1px 9px; }
   .toolbar { flex-direction: column; align-items: stretch; }
   /* toolbar เป็นแนวตั้งแล้ว flex-basis จะไปคุมความสูงแทน — ต้องรีเซ็ต */
-  .search { flex: 0 0 auto; width: 100%; }
+  .searchbox { flex: 0 0 auto; width: 100%; }
   .lb { padding: 0; }
   .lb-box { max-height: 100vh; height: 100%; border-radius: 0; border: none; }
 }

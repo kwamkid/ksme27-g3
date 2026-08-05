@@ -24,10 +24,25 @@ trap 'rm -rf "$TMP"' EXIT
 
 mkdir -p "$PUB/avatar" "$PUB/owner" "$PUB/logo" "$PUB/hero" "$PUB/costume"
 
-# แปลงไฟล์อะไรก็ได้ (รวม HEIC/ai) → webp   $1=src $2=out $3=width $4=quality $5=หมุนกี่องศาตามเข็ม (ไม่ใส่=0)
-# หมายเหตุ: cwebp ไม่อ่าน EXIF orientation ถ้ารูปต้นฉบับตะแคงต้องสั่งหมุนเองผ่านคอลัมน์ rot
+# cwebp ไม่อ่าน EXIF orientation รูปจากมือถือที่ถ่ายแนวตั้งเลยออกมาตะแคง
+# อ่านค่า orientation จริงแล้วบอกว่าต้องหมุนกี่องศาตามเข็ม (ต้องมี python3 + Pillow ไม่มีก็คืน 0)
+exif_rot() {
+  python3 - "$1" 2>/dev/null <<'PY' || echo 0
+import sys
+try:
+    from PIL import Image
+    o = Image.open(sys.argv[1]).getexif().get(274, 1)
+    print({3: 180, 6: 90, 8: 270}.get(o, 0))
+except Exception:
+    print(0)
+PY
+}
+
+# แปลงไฟล์อะไรก็ได้ (รวม HEIC/ai) → webp   $1=src $2=out $3=width $4=quality
+# หมุนแก้รูปตะแคงให้เองตาม EXIF
 to_webp() {
-  local src="$1" out="$2" w="$3" q="$4" rot="${5:-0}" tmp
+  local src="$1" out="$2" w="$3" q="$4" rot tmp
+  rot="$(exif_rot "$src")"
   [ -f "$src" ] || { echo "  ✗ ไม่พบ: $src"; return 1; }
   case "${src##*.}" in
     HEIC|heic|ai|AI|PDF|pdf)
@@ -116,28 +131,15 @@ pick_asset() {
     -print0 2>/dev/null | xargs -0 ls -S 2>/dev/null | head -1
 }
 
-# ไฟล์ที่ต้องเลือกเองไม่ให้ auto เดา   id|kind|ชื่อไฟล์|องศาที่ต้องหมุน
-override() {
-  case "$1|$2" in
-    # ไฟล์ใหญ่สุดของ Foilmaster เป็นรูปตะแคง ต้องหมุน 270 องศา (cwebp ไม่อ่าน EXIF)
-    "make-foilmaster|face") printf 'face_OCT_8938.JPG|270' ;;
-    *) printf '' ;;
-  esac
-}
-
 echo "▸ รูปเจ้าของ + โลโก้"
 while IFS='|' read -r id dir; do
   [ -z "${id:-}" ] && continue
 
-  ov="$(override "$id" face)"
-  if [ -n "$ov" ]; then
-    face="$TEAMS/$dir/${ov%%|*}"; rot="${ov##*|}"
-  else
-    face="$(pick_asset "$TEAMS/$dir" face)"; rot=0
-  fi
+  face="$(pick_asset "$TEAMS/$dir" face)"
   if [ -n "$face" ]; then
-    echo "  $id ← $(basename "$face")"
-    to_webp "$face" "$PUB/owner/$id.webp" 480 82 "$rot" || true
+    r="$(exif_rot "$face")"
+    echo "  $id ← $(basename "$face")${r:+$([ "$r" != 0 ] && echo "  (หมุน $r°)")}"
+    to_webp "$face" "$PUB/owner/$id.webp" 480 82 || true
   else
     echo "  ✗ $id ยังไม่มีรูปเจ้าของ"
   fi

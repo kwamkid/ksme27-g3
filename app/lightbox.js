@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getMe } from "./me";
+import Icon from "./icons";
 
 const ST = {
-  approved: { t: "ผ่านแล้ว", cls: "ok", icon: "✅" },
-  rejected: { t: "ตกไป", cls: "todo", icon: "❌" },
-  draft: { t: "รอรีวิว", cls: "draft", icon: "🎬" },
+  approved: { t: "ผ่านแล้ว", cls: "ok", icon: "check" },
+  rejected: { t: "ตกไป", cls: "todo", icon: "x" },
+  draft: { t: "รอรีวิว", cls: "draft", icon: "clip" },
 };
 
 /**
@@ -120,7 +121,7 @@ export default function Lightbox({ member, onClose, onChanged }) {
                     className={`chip ${c.id === clip.id ? "on" : ""}`}
                     onClick={() => setCurId(c.id)}
                   >
-                    v{c.version} {(ST[c.status] || {}).icon}
+                    v{c.version} <Icon name={(ST[c.status] || {}).icon} />
                   </button>
                 ))}
               </div>
@@ -132,7 +133,7 @@ export default function Lightbox({ member, onClose, onChanged }) {
               <span className={`pill ${(ST[clip.status] || {}).cls}`}>
                 v{clip.version} · {(ST[clip.status] || {}).t || clip.status}
               </span>
-              {clip.dialogue_th && <span className="lb-say">🗣 {clip.dialogue_th}</span>}
+              {clip.dialogue_th && <span className="lb-say"><Icon name="mic" /> {clip.dialogue_th}</span>}
             </div>
 
             <div className="lb-act">
@@ -141,7 +142,7 @@ export default function Lightbox({ member, onClose, onChanged }) {
                 disabled={busy}
                 onClick={() => setStatus(clip.status === "approved" ? "draft" : "approved")}
               >
-                {clip.status === "approved" ? `✅ เอาอันนี้ (v${clip.version})` : `เอาอันนี้ (v${clip.version})`}
+                {clip.status === "approved" && <Icon name="check" />} เอาอันนี้ (v{clip.version})
               </button>
               <span className="dimtext">
                 {clip.status === "approved"
@@ -176,7 +177,7 @@ export default function Lightbox({ member, onClose, onChanged }) {
                 {f.author}
                 {f.clip_id && verOf[f.clip_id] ? ` · v${verOf[f.clip_id]}` : ""} ·{" "}
                 {new Date(f.created_at).toLocaleString("th-TH")}{" "}
-                {f.vote === "ok" ? "👍" : f.vote === "revise" ? "🔧" : ""}
+                
                 {f.author === getMe().trim() && (
                   <button className="lb-del" disabled={busy} onClick={() => removeFeedback(f.id)}>
                     ลบ
@@ -186,7 +187,7 @@ export default function Lightbox({ member, onClose, onChanged }) {
               {f.message}
               <div className="fb-done">
                 <button className={`dn ${f.done ? "on" : ""}`} disabled={busy} onClick={() => toggleDone(f)}>
-                  {f.done ? "☑ ทำแล้ว" : "☐ ยังไม่ได้ทำ"}
+                  <><Icon name={f.done ? "boxChecked" : "box"} /> {f.done ? "ทำแล้ว" : "ยังไม่ได้ทำ"}</>
                 </button>
                 {f.done && f.done_by && (
                   <span className="dimtext">

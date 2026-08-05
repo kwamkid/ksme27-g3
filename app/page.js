@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { avatarSrc, ownerSrc, logoSrc, heroSrc } from "@/lib/assets";
 import Lightbox from "./lightbox";
+import Icon from "./icons";
 
 // 2 = มีแล้ว · 1 = มีไฟล์แต่ยังใช้บนเว็บไม่ได้ (เช่น .ai) · 0 = ยังไม่มี
 const CHECKS = [
@@ -17,11 +18,11 @@ const CHECKS = [
 // ตัวกรองเรียงตามลำดับงานที่ทำจริง: ของที่ต้องจัดการก่อน → ของที่เสร็จแล้ว
 const FILTERS = [
   { key: "all", label: "ทั้งหมด" },
-  { key: "todocomment", label: "💬 คอมเมนต์รอแก้" },
-  { key: "pending", label: "🎬 ยังไม่ผ่าน" },
-  { key: "noclip", label: "⏳ ยังไม่มีคลิป" },
-  { key: "nochar", label: "ยังไม่มีตัวละคร" },
-  { key: "approved", label: "✅ ผ่านแล้ว" },
+  { key: "todocomment", label: "คอมเมนต์รอแก้", icon: "comment" },
+  { key: "pending", label: "ยังไม่ผ่าน", icon: "clip" },
+  { key: "noclip", label: "ยังไม่มีคลิป", icon: "clock" },
+  { key: "nochar", label: "ยังไม่มีตัวละคร", icon: "user" },
+  { key: "approved", label: "ผ่านแล้ว", icon: "check" },
 ];
 
 // เงื่อนไขของแต่ละตัวกรอง เก็บไว้ที่เดียวจะได้ไม่หลุดกันระหว่างตัวนับกับตัวกรอง
@@ -164,29 +165,39 @@ export default function Directory() {
         </div>
 
         <div className="toolbar">
-          <input
-            className="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="ค้นหาชื่อกิจการ / เจ้าของ / ชื่อเล่น / รหัส…"
-          />
+          <div className="searchbox">
+            <input
+              className="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => e.key === "Escape" && setQ("")}
+              placeholder="ค้นหาชื่อกิจการ / เจ้าของ / ชื่อเล่น / รหัส…"
+            />
+            {q && (
+              <button className="search-x" onClick={() => setQ("")} aria-label="ล้างคำค้นหา">
+                <Icon name="x" />
+              </button>
+            )}
+          </div>
           <div className="views">
-            <button className={`chip ${view === "cards" ? "on" : ""}`} onClick={() => setView("cards")}>🗂 การ์ด</button>
-            <button className={`chip ${view === "table" ? "on" : ""}`} onClick={() => setView("table")}>📋 ตารางเช็กของ</button>
+            <button className={`chip ${view === "cards" ? "on" : ""}`} onClick={() => setView("cards")}><Icon name="grid" /> การ์ด</button>
+            <button className={`chip ${view === "table" ? "on" : ""}`} onClick={() => setView("table")}><Icon name="list" /> ตารางเช็กของ</button>
           </div>
         </div>
 
-        <div className="chips">
-          <button className={`chip ${!team ? "on" : ""}`} onClick={() => setTeam(null)}>ทุกทีม</button>
+        <div className="tabs">
+          <button className={`tab ${!team ? "on" : ""}`} onClick={() => setTeam(null)}>
+            ทุกทีม <em>{rows.length}</em>
+          </button>
           {data.teams.map((t) => (
             <button
               key={t.key}
-              className={`chip ${team === t.key ? "on" : ""}`}
-              style={team === t.key ? { borderColor: t.color, color: t.color } : undefined}
+              className={`tab ${team === t.key ? "on" : ""}`}
+              style={{ "--tc": t.color }}
               onClick={() => setTeam(team === t.key ? null : t.key)}
             >
               <span className="dot sm" style={{ background: t.color }} />
-              {t.key}
+              {t.key} <em>{rows.filter((m) => m.team === t.key).length}</em>
             </button>
           ))}
         </div>
@@ -198,6 +209,7 @@ export default function Directory() {
               className={`chip ${filter === f.key ? "on" : ""}`}
               onClick={() => setFilter(f.key)}
             >
+              {f.icon && <Icon name={f.icon} />}
               {f.label} <em>{countOf(f.key)}</em>
             </button>
           ))}
@@ -246,21 +258,23 @@ export default function Directory() {
                     </p>
                     <div className="dir-pills">
                       <span className={`pill ${m.approved ? "ok" : m.clips.length ? "draft" : "todo"}`}>
-                        {m.approved
-                          ? "✅ ผ่านแล้ว"
-                          : m.clips.length
-                          ? `🎬 v${m.latest.version} ${CLIP_TH[m.latest.status] || ""}`
-                          : "⏳ ยังไม่มีคลิป"}
+                        {m.approved ? (
+                          <><Icon name="check" /> ผ่านแล้ว</>
+                        ) : m.clips.length ? (
+                          <><Icon name="clip" /> v{m.latest.version} {CLIP_TH[m.latest.status] || ""}</>
+                        ) : (
+                          <><Icon name="clock" /> ยังไม่มีคลิป</>
+                        )}
                       </span>
                       {m.clips.length > 1 && <span className="pill">{m.clips.length} เวอร์ชัน</span>}
                       {m.openComments > 0 ? (
-                        <span className="pill miss">💬 {m.openComments} รอแก้</span>
+                        <span className="pill miss"><Icon name="comment" /> {m.openComments} รอแก้</span>
                       ) : (
-                        m.feedback.length > 0 && <span className="pill">💬 {m.feedback.length}</span>
+                        m.feedback.length > 0 && <span className="pill"><Icon name="comment" /> {m.feedback.length}</span>
                       )}
                       {m.missing.length > 0 && (
                         <span className="pill miss" title={`ยังไม่ได้ส่ง: ${m.missing.join(" · ")}`}>
-                          ขาดรูป {m.missing.length}
+                          <Icon name="image" /> ขาด {m.missing.length}
                         </span>
                       )}
                     </div>
@@ -268,7 +282,7 @@ export default function Directory() {
 
                   <div className="dir-act">
                     <button className="play" disabled={!m.clips.length} onClick={() => setLbId(m.id)}>
-                      {m.clips.length ? "▶ ดูคลิป" : "ยังไม่มีคลิป"}
+                      {m.clips.length ? <><Icon name="play" /> ดูคลิป</> : "ยังไม่มีคลิป"}
                     </button>
                     <a className="btnlink" href={`/member/${m.id}`}>รายละเอียด →</a>
                   </div>
@@ -327,7 +341,7 @@ export default function Directory() {
                   <span className="ck-clip">
                     {m.clips.length ? (
                       <button className="play sm" onClick={() => setLbId(m.id)}>
-                        ▶ v{m.latest.version} {CLIP_TH[m.latest.status] || ""}
+                        <Icon name="play" /> v{m.latest.version} {CLIP_TH[m.latest.status] || ""}
                       </button>
                     ) : (
                       <span className="pill todo">ยังไม่มีคลิป</span>
