@@ -16,6 +16,7 @@ export default function RootLayout({ children }) {
             <h1><Icon name="bolt" /> G3 Avengers</h1>
             <nav>
               <a href="/">แดชบอร์ด</a>
+              <a href="/teams">คลิปเปิดตัวทีม</a>
               <a href="/script">สคริปต์ &amp; สไตล์</a>
             </nav>
             <Me />

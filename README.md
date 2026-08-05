@@ -67,6 +67,17 @@ bash scripts/build-assets.sh     # ต้องมี cwebp: brew install webp
 มีรูปเพิ่ม → เติมบรรทัดใน mapping ท้าย `scripts/build-assets.sh` แล้วรันใหม่ + เติม id ใน `lib/assets.js`
 คอลัมน์สุดท้ายของ mapping คือองศาหมุน (ใส่ไว้เพราะ cwebp ไม่อ่าน EXIF — เช่น Foilmaster ต้อง `270`)
 
+## คลิปเปิดตัวทีม
+
+คลิป "ปัญหา" ของแต่ละสาย อยู่หน้า `/teams` (เมนู "คลิปเปิดตัวทีม")
+เก็บ URL ไว้ที่ `teams.intro_url` — รูปปกอยู่ที่ `public/team/<KEY>.webp` เปลี่ยนคลิปเมื่อไหร่ให้รันใหม่
+
+```bash
+bash scripts/team-posters.sh     # อ่าน intro_url จาก DB → ทำรูปปกให้เอง
+```
+
+ต้องมีรูปปกจริง ๆ ไม่งั้นเบราว์เซอร์จะดึงคลิปทั้ง 6 ไฟล์ (~15 MB) มาหาเฟรมแรกตั้งแต่เปิดหน้าแรก
+
 ## บทพูดในคลิป
 
 แก้ที่ `db/dialogue.json` ที่เดียว แล้ว

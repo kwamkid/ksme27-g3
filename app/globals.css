@@ -145,6 +145,82 @@ header.top nav a:hover { color: var(--text); }
 .reel-stage video { transition: opacity .22s ease; }
 .reel-stage video.loading { opacity: .35; }
 
+/* ───────── คลิปเปิดตัว 6 ทีม ───────── */
+.intro { margin-top: 26px; }
+.intro-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.intro-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 0; overflow: hidden; cursor: pointer; font-family: inherit; font-size: 16px;
+  color: var(--text); text-align: left; display: flex; flex-direction: column;
+  transition: border-color .18s, transform .12s;
+}
+.intro-card:hover { border-color: var(--tc); transform: translateY(-2px); }
+.intro-card:active { transform: translateY(0); }
+
+.intro-thumb { position: relative; display: block; aspect-ratio: 16 / 9; background: #000; }
+.intro-thumb img {
+  width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;
+}
+/* ปุ่มเล่นกลางรูปปก — เป็นแค่ภาพ คลิกทั้งการ์ดได้อยู่แล้ว */
+.intro-play {
+  position: absolute; inset: 0; margin: auto; width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10,12,18,.66); border: 1px solid rgba(255,255,255,.22);
+  border-radius: 50%; color: #fff; font-size: 20px; padding-left: 3px;
+  transition: background .18s;
+}
+.intro-card:hover .intro-play { background: color-mix(in srgb, var(--tc) 78%, #0b0d13); }
+.intro-key {
+  position: absolute; left: 10px; top: 10px; background: var(--tc); color: #fff;
+  border-radius: 99px; padding: 2px 12px; font-weight: 600; letter-spacing: .4px;
+}
+.intro-txt { display: block; padding: 12px 14px 14px; }
+.intro-txt b { display: block; }
+.intro-txt small { display: block; color: var(--dim); margin-top: 3px; font-size: 16px; }
+.intro-n {
+  display: inline-block; margin-top: 9px; color: var(--tc);
+  border: 1px solid color-mix(in srgb, var(--tc) 45%, transparent);
+  border-radius: 99px; padding: 1px 11px;
+}
+
+/* กล่องดูคลิปทีม — ใช้โครง .lb เดิม เปลี่ยนแค่ตัวเวที */
+.intro-box { width: min(880px, 100%); }
+.intro-foot {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 13px;
+}
+.intro-stage { position: relative; }
+.intro-stage video {
+  width: 100%; aspect-ratio: 16 / 9; background: #000; display: block;
+  border-radius: 12px; border: 1px solid var(--line);
+}
+.intro-dots { display: flex; flex-wrap: wrap; gap: 8px; }
+.intro-dot {
+  background: transparent; border: 1px solid var(--line); color: var(--dim);
+  border-radius: 99px; padding: 4px 14px; cursor: pointer; font-family: inherit; font-size: 16px;
+}
+.intro-dot:hover { border-color: var(--tc); color: var(--text); }
+.intro-dot.on { background: var(--tc); border-color: var(--tc); color: #fff; font-weight: 600; }
+
+/* ลิงก์ไปหน้าทำเนียบที่กรองทีมนี้ไว้ให้แล้ว */
+.intro-go {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+  color: var(--tc); text-decoration: none; font-weight: 600;
+  border: 1px solid color-mix(in srgb, var(--tc) 45%, transparent);
+  border-radius: 99px; padding: 5px 15px; white-space: nowrap;
+}
+.intro-go:hover { background: color-mix(in srgb, var(--tc) 16%, transparent); border-color: var(--tc); }
+
+@media (max-width: 980px) { .intro-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* จอมือถือ 6 ใบเรียงลงมายาวเกินไป — เปลี่ยนเป็นเลื่อนแนวนอนทีละใบ */
+@media (max-width: 640px) {
+  .intro-grid {
+    display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+    padding-bottom: 6px; margin-right: -13px; padding-right: 13px;
+  }
+  .intro-card { flex: 0 0 74vw; scroll-snap-align: start; }
+}
+
 .dot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
 .dot.sm { width: 10px; height: 10px; border-radius: 3px; }
 

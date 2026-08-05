@@ -12,11 +12,13 @@ drop table if exists teams cascade;
 drop table if exists script_sections cascade;
 
 create table teams (
-  key         text primary key,
-  name_th     text,
-  color       text,
-  tagline     text,
-  sort_order  int default 0
+  key          text primary key,
+  name_th      text,
+  color        text,
+  tagline      text,
+  sort_order   int default 0,
+  intro_url    text,               -- คลิปเปิดตัวทีม (คลิป "ปัญหา" ของสายนั้น)
+  intro_job_id text
 );
 
 create table members (
@@ -100,3 +102,22 @@ create table script_sections (
 create index on feedback (member_id, created_at desc);
 create index on clips (member_id, version desc);
 create index on members (team, sort_order);
+
+-- ให้มีได้แค่เวอร์ชันล่าสุดเวอร์ชันเดียวที่รอรีวิว
+-- พอ insert เวอร์ชันใหม่ เวอร์ชันเก่าที่ยัง draft จะกลายเป็น rejected เอง
+-- (เวอร์ชันที่ approved ไปแล้วไม่ถูกแตะ)
+create or replace function clips_supersede_old_drafts() returns trigger as $$
+begin
+  update clips
+     set status = 'rejected'
+   where member_id = new.member_id
+     and id <> new.id
+     and version < new.version
+     and status = 'draft';
+  return null;
+end $$ language plpgsql;
+
+drop trigger if exists trg_clips_supersede on clips;
+create trigger trg_clips_supersede
+after insert on clips
+for each row execute function clips_supersede_old_drafts();
