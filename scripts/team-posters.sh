@@ -21,10 +21,12 @@ command -v cwebp >/dev/null || { echo "ไม่มี cwebp — ลงด้ว
 DB=$(grep '^DATABASE_URL=' .env.local | cut -d= -f2- | tr -d "'\"")
 [ -n "$DB" ] || { echo "ไม่เจอ DATABASE_URL ใน .env.local"; exit 1; }
 
-# key<TAB>url ของทีมที่มีคลิปแล้ว
-psql "$DB" -At -F $'\t' -c \
-  "select key, intro_url from teams where intro_url is not null and intro_url <> '' order by sort_order" \
-  > "$TMP/list.tsv"
+# ชื่อไฟล์<TAB>url — ตอนที่ 1 เป็น <KEY> ตอนที่ 2 เป็น <KEY>-2
+psql "$DB" -At -F $'\t' -c "
+  select key,          intro_url from teams where intro_url is not null and intro_url <> ''
+  union all
+  select key || '-2',  hero_url  from teams where hero_url  is not null and hero_url  <> ''
+  order by 1" > "$TMP/list.tsv"
 
 n=0
 while IFS=$'\t' read -r key url; do

@@ -69,8 +69,14 @@ bash scripts/build-assets.sh     # ต้องมี cwebp: brew install webp
 
 ## คลิปเปิดตัวทีม
 
-คลิป "ปัญหา" ของแต่ละสาย อยู่หน้า `/teams` (เมนู "คลิปเปิดตัวทีม")
-เก็บ URL ไว้ที่ `teams.intro_url` — รูปปกอยู่ที่ `public/team/<KEY>.webp` เปลี่ยนคลิปเมื่อไหร่ให้รันใหม่
+อยู่หน้า `/teams` (เมนู "คลิปเปิดตัวทีม") เล่นต่อกันเป็นตอน
+
+| ตอน | คอลัมน์ใน `teams` | รูปปก |
+|---|---|---|
+| 1 ฉากปัญหา | `intro_url` | `public/team/<KEY>.webp` |
+| 2 เปิดตัวทีม | `hero_url` | `public/team/<KEY>-2.webp` |
+
+ทีมที่ยังไม่มีตอนที่ 2 ก็เล่นแค่ตอนเดียว เปลี่ยนคลิปเมื่อไหร่ให้รันใหม่
 
 ```bash
 bash scripts/team-posters.sh     # อ่าน intro_url จาก DB → ทำรูปปกให้เอง

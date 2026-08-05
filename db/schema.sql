@@ -17,8 +17,10 @@ create table teams (
   color        text,
   tagline      text,
   sort_order   int default 0,
-  intro_url    text,               -- คลิปเปิดตัวทีม (คลิป "ปัญหา" ของสายนั้น)
-  intro_job_id text
+  intro_url    text,               -- ตอนที่ 1 ฉากปัญหาของสายนั้น
+  intro_job_id text,
+  hero_url     text,               -- ตอนที่ 2 ทีมมาจัดการ (เล่นต่อจากตอนที่ 1)
+  hero_job_id  text
 );
 
 create table members (
