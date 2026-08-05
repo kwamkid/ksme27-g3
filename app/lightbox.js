@@ -147,7 +147,8 @@ export default function Lightbox({ member, onClose, onChanged }) {
                 disabled={busy}
                 onClick={() => setStatus(clip.status === "approved" ? "draft" : "approved")}
               >
-                {clip.status === "approved" && <Icon name="check" />} เอาอันนี้ (v{clip.version})
+                <Icon name={clip.status === "approved" ? "circleCheck" : "circle"} />
+                {clip.status === "approved" ? `เอาอันนี้แล้ว (v${clip.version})` : `เอาอันนี้ (v${clip.version})`}
               </button>
               <span className="dimtext">
                 {clip.status === "approved"

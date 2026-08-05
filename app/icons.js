@@ -27,6 +27,8 @@ const P = {
   scene: <><rect x="2.5" y="8" width="19" height="12.5" rx="2" /><path d="M2.5 8l3-4.5 4 3.2 3-3.2 4 3.2 3-3.2" /></>,
   user: <><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20a7.5 7.5 0 0115 0" /></>,
   image: <><rect x="3" y="4.5" width="18" height="15" rx="2" /><circle cx="8.5" cy="10" r="1.6" /><path d="M4 17l5-4.5 4.5 4 2.5-2 4 3.5" /></>,
+  circle: <circle cx="12" cy="12" r="8.5" />,
+  circleCheck: <><circle cx="12" cy="12" r="8.5" /><path d="M8.3 12.2l2.6 2.6 4.8-5.4" /></>,
   box: <rect x="4" y="4" width="16" height="16" rx="3" />,
   boxChecked: <><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8 12.3l2.8 2.8L16.5 9" /></>,
   bolt: <path d="M13.5 2.5L5 13.5h6l-1.5 8L19 10.5h-6z" fill="currentColor" stroke="none" />,

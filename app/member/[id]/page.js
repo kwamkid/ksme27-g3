@@ -251,11 +251,14 @@ export default function MemberPage({ params }) {
                 disabled={busy || !targetClip}
                 onClick={toggleApprove}
               >
-                {!targetClip
-                  ? "ยังไม่มีคลิปให้เลือก"
-                  : approvedClip
-                  ? <><Icon name="check" /> เอาอันนี้ (v{approvedClip.version})</>
-                  : `เอาอันนี้ (v${targetClip.version})`}
+                {!targetClip ? (
+                  "ยังไม่มีคลิปให้เลือก"
+                ) : (
+                  <>
+                    <Icon name={approvedClip ? "circleCheck" : "circle"} />
+                    {approvedClip ? `เอาอันนี้แล้ว (v${approvedClip.version})` : `เอาอันนี้ (v${targetClip.version})`}
+                  </>
+                )}
               </button>
               <span className="dimtext">
                 {approvedClip

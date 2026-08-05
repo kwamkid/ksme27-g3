@@ -44,6 +44,7 @@ export default function Directory() {
   const [filter, setFilter] = useState("all");
   const [q, setQ] = useState("");
   const [lbId, setLbId] = useState(null);
+  const [ready, setReady] = useState(false);
 
   const load = () =>
     fetch("/api/data")
@@ -52,6 +53,35 @@ export default function Directory() {
       .catch((e) => setErr(String(e)));
 
   useEffect(() => { load(); }, []);
+
+  // อ่านทีม/ตัวกรอง/คำค้นหา จาก URL ตอนเปิดหน้า และตอนกดปุ่ม back ของเบราว์เซอร์
+  // (อ่านใน effect ไม่ใช่ตอน useState เพื่อให้ฝั่ง server กับ client ตรงกัน)
+  useEffect(() => {
+    const apply = () => {
+      const p = new URLSearchParams(window.location.search);
+      setTeam(p.get("team") || null);
+      setFilter(p.get("f") || "all");
+      setQ(p.get("q") || "");
+      setView(p.get("v") === "table" ? "table" : "cards");
+    };
+    apply();
+    setReady(true);
+    window.addEventListener("popstate", apply);
+    return () => window.removeEventListener("popstate", apply);
+  }, []);
+
+  // เขียนกลับลง URL เพื่อให้ copy ลิงก์ไปแปะในไลน์แล้วเปิดมาเห็นชุดเดียวกัน
+  // ใช้ replaceState เพื่อไม่ให้ทุกครั้งที่กดตัวกรองไปโผล่ในประวัติเบราว์เซอร์
+  useEffect(() => {
+    if (!ready) return;
+    const p = new URLSearchParams();
+    if (team) p.set("team", team);
+    if (filter !== "all") p.set("f", filter);
+    if (q.trim()) p.set("q", q.trim());
+    if (view !== "cards") p.set("v", view);
+    const s = p.toString();
+    window.history.replaceState(null, "", s ? `?${s}` : window.location.pathname);
+  }, [ready, team, filter, q, view]);
 
   const rows = useMemo(() => {
     if (!data) return [];
