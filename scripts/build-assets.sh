@@ -177,6 +177,30 @@ thrive-joyous|6-THRIVE/6.3-Joyous
 thrive-leviya|6-THRIVE/6.4-LEVIYA
 EOF
 
+# ---------- 4) เขียน lib/assets.js จากไฟล์ที่มีจริง ----------
+# ไม่ต้องมาแก้รายชื่อด้วยมือทุกครั้งที่มีรูปเพิ่ม
+ids_of() { ls "$PUB/$1" 2>/dev/null | sed 's/\.webp$//' | sort | awk '{printf "  \"%s\",\n", $0}'; }
+
+{
+  echo "// ⚠️ ไฟล์นี้ถูกสร้างอัตโนมัติโดย scripts/build-assets.sh — อย่าแก้ด้วยมือ"
+  echo "// มีรูปเพิ่ม? วางไฟล์ในโฟลเดอร์งานแล้วรัน: bash scripts/build-assets.sh"
+  echo
+  echo "// ตัวละคร (2-Production/5.1 Characters/v2-characters/)"
+  echo "const AVATAR = new Set(["; ids_of avatar; echo "]);"
+  echo
+  echo "// รูปเจ้าของตัวจริง (1-Teams/**/face*)"
+  echo "const OWNER = new Set(["; ids_of owner; echo "]);"
+  echo
+  echo "// โลโก้กิจการ (1-Teams/**/logo*)"
+  echo "const LOGO = new Set(["; ids_of logo; echo "]);"
+  echo
+  echo 'export const avatarSrc = (id) => (AVATAR.has(id) ? `/avatar/${id}.webp` : null);'
+  echo 'export const ownerSrc = (id) => (OWNER.has(id) ? `/owner/${id}.webp` : null);'
+  echo 'export const logoSrc = (id) => (LOGO.has(id) ? `/logo/${id}.webp` : null);'
+  echo 'export const heroSrc = (team) => `/hero/${team}.webp`;'
+} > "$APP/lib/assets.js"
+echo "▸ เขียน lib/assets.js ใหม่แล้ว"
+
 echo
 echo "── สรุป ──"
 for d in avatar owner logo hero costume; do
